@@ -1,0 +1,3 @@
+/home/sergio/Documentos/GitHub/SOp0/cmake-build-debug/CMakeFiles/P0.dir
+/home/sergio/Documentos/GitHub/SOp0/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/sergio/Documentos/GitHub/SOp0/cmake-build-debug/CMakeFiles/rebuild_cache.dir

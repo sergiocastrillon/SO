@@ -1,0 +1,4 @@
+Anotaciones para SO:
+
+1. Los comandos se guardan en la lista antes del resultado, es decir que si haces hist, esa ejecución de hist debe mostrarse en ya en la lista.
+
