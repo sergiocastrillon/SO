@@ -9,7 +9,9 @@ typedef tPosL tList;
 
 
 
-void CreateList(tList *L);
+void CreateList(tList *L){
+
+}
 
 
 
@@ -46,8 +48,8 @@ bool InsertElement (tItemL item, tList L){
 void RemoveElement (tPosL pos, tList L){
     tPosL temp;
     if(pos->sig==LNULL){ // El elemento a borrar es el último de la lista
-        if(*L==pos){ // El elemento a borrar es el único elemento de la lista
-            *L=LNULL;
+        if(L==pos){ // El elemento a borrar es el único elemento de la lista
+            // Dependiendo de como funcione la lista con head node
         }else{ // Si no lo es tenemos que buscar el penúltimo elemento y hacer que el siguiente sea LNULL
             temp = previous(pos,*L);
             temp->sig = LNULL;
