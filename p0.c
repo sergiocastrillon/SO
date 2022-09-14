@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <math.h>
+#include "lista.h"
 #define MAX 30
 // Sería conveniente pasar los comentarios de errores o posibles alternativas a un archivo por separado
 // o usar la sección de Issues de GitHub para solo dejar comentarios que ayuden a entender el código
@@ -18,8 +18,10 @@ void imprimirPrompt(){
     printf("~$ ");
 }
 
-void leerEntrada(char entrada[]){
+void leerEntrada(char entrada[],tList lista){
     fgets(entrada, MAX + 1, stdin);
+    InsertElement(entrada,lista);
+
 }
 
 void opcionInvalida(char comando[],char opcion[]){
@@ -49,8 +51,26 @@ void pid(char* trozos[],int ntrozos){
     printf("Pid de shell: %d",nprocess);
 }
 
+void hist(char* trozos[],int ntrozos,tList lista){
 
-void procesarEntrada(char comando[]){
+    if(!isEmptyList(lista)){
+        tPosL temp;
+        temp = lista;
+        int x = 0;
+        for(tPosL i = lista; i!= NULL; i = next(i,lista)){
+
+            char* comando = getItem(i,lista);
+            printf("%s",comando);
+            //printf("%s\n",temp->data);
+            //temp = next(temp,lista);
+            x++;
+
+    }
+
+    }
+}
+
+void procesarEntrada(char comando[],tList lista){
     char* trozos[3]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
     // Si se introduce un espacio al final del comando el programa peta, relacionado con lo de arriba??
     int ntrozos = TrocearCadena(comando,trozos);
@@ -62,7 +82,7 @@ void procesarEntrada(char comando[]){
         else if(strcmp(trozos[0],"pid")==0) printf("Prueba 1");
         else if(strcmp(trozos[0],"carpeta")==0) printf("Prueba 2");
         else if(strcmp(trozos[0],"fecha")==0) printf("Prueba 3");
-        else if(strcmp(trozos[0],"hist")==0) printf("Prueba 4");
+        else if(strcmp(trozos[0],"hist")==0) hist(trozos,ntrozos,lista);
         else if(strcmp(trozos[0],"comando")==0) printf("Prueba 5");
         else if(strcmp(trozos[0],"infosis")==0) printf("Prueba 6");
         else if(strcmp(trozos[0],"ayuda")==0) printf("Prueba 7");
@@ -78,15 +98,23 @@ void procesarEntrada(char comando[]){
 
 
 int main() {
-    int terminado = 0;
-    while (terminado==0){
+    int terminado = -5;
+    tList lista;
+    CreateList(&lista);
+    while (terminado!=0){
         imprimirPrompt();
         char comando[20];
-        leerEntrada(comando);
+        leerEntrada(comando,lista);
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
-        procesarEntrada(comando);
+        procesarEntrada(comando,lista);
 
-        terminado=1;
+        terminado++;
+    }
+    tPosL i = lista; // Eliminar fugas de memoria valgrind
+    while(i!=NULL){
+        tPosL x = next(i,lista);
+        free(i);
+        i = x;
     }
     return 0;
 }
