@@ -55,6 +55,12 @@ build CMakeFiles/P0.dir/p0.c.o: C_COMPILER__P0_Debug /home/sergio/Documentos/Git
   OBJECT_DIR = CMakeFiles/P0.dir
   OBJECT_FILE_DIR = CMakeFiles/P0.dir
 
+build CMakeFiles/P0.dir/lista.c.o: C_COMPILER__P0_Debug /home/sergio/Documentos/GitHub/SOp0/lista.c || cmake_object_order_depends_target_P0
+  DEP_FILE = CMakeFiles/P0.dir/lista.c.o.d
+  FLAGS = -g -std=gnu99
+  OBJECT_DIR = CMakeFiles/P0.dir
+  OBJECT_FILE_DIR = CMakeFiles/P0.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target P0
@@ -63,7 +69,7 @@ build CMakeFiles/P0.dir/p0.c.o: C_COMPILER__P0_Debug /home/sergio/Documentos/Git
 #############################################
 # Link the executable P0
 
-build P0: C_EXECUTABLE_LINKER__P0_Debug CMakeFiles/P0.dir/p0.c.o
+build P0: C_EXECUTABLE_LINKER__P0_Debug CMakeFiles/P0.dir/p0.c.o CMakeFiles/P0.dir/lista.c.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/P0.dir
   POST_BUILD = :
