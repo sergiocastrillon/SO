@@ -20,4 +20,4 @@ tPosL previous(tPosL pos, tList list); // Comprobado
 tPosL next(tPosL pos, tList L); // Comprobado
 tPosL first(tList list);
 tPosL last(tList list); // Comprobado
-char* getItem (tPosL pos, tList L); // Comprobado
+void getElement (tPosL pos, char* item, tList L); // Comprobado

@@ -22,6 +22,7 @@ void imprimirPrompt(){
 
 void leerEntrada(char entrada[],tList lista){
     fgets(entrada, MAX + 1, stdin);
+    entrada[strcspn(entrada,"\n")]=0; // Eliminar problemas que pueda crear el \n que añade fgets
     InsertElement(entrada,lista);
 
 }
@@ -57,15 +58,19 @@ void hist(char* trozos[],int ntrozos,tList lista){
     if(ntrozos == 1){ // No se introdujo ninguna opción, imprimir historial
         int x = 0;
         for(tPosL i = lista; i!= NULL; i = next(i,lista)){
-            char* comando = getItem(i,lista);
-            printf("%d -> %s",x,comando);
+            char comando[20];
+            getElement(i,comando,lista);
+            printf("%d -> %s\n",x,comando);
             x++;
         }
 
     }else if(strcmp(trozos[1],"-c")==0){ // Borrar la lista
         tPosL pos = first(lista);
-        while(pos != NULL && (strcmp(getItem(pos,lista),"\0")!=0)){
+        char elemento[MAX];
+        getElement(pos,elemento,lista);
+        while(pos != NULL && strcmp(elemento,"\0")!=0){
             RemoveElement(pos, lista);
+            getElement(pos,elemento,lista);
         }
 
     }else{
@@ -76,8 +81,9 @@ void hist(char* trozos[],int ntrozos,tList lista){
             int i = 0;
             tPosL pos = first(lista);
             while((i < n) && pos != NULL){ // Probar si hace falta poner \0
-                char* comando = getItem(pos,lista);
-                printf("%d -> %s",i,comando);
+                char comando[MAX];
+                getElement(pos,comando,lista);
+                printf("%d -> %s\n",i,comando);
                 i++;
                 pos = next(pos,lista);
             }
@@ -172,9 +178,18 @@ void comando(char* trozos[], int ntrozos, tList lista){
                 pos = next(pos,lista);
                 i++;
             }
-            char* comandoHist = getItem(pos,lista);
+            char comandoHist[MAX];
+            getElement(pos,comandoHist,lista);
+            char* trozos1[3];
+            char copia[MAX];
+            strcpy(copia,comandoHist); // Se borra N si el historial contiene la orden "comando N"
+            TrocearCadena(copia,trozos1);
+            if(strcmp(trozos1[0],"comando")==0){
+                long z = strtol(trozos1[1],&error,10);
+                if(error!=trozos1[1] && n==z) printf("Error: Detenido el comando por posibilidad de bucle infinito\n");
+                else procesarEntrada(comandoHist,lista);
+            } else procesarEntrada(comandoHist,lista);
             //printf("%s",comandoHist);
-            //procesarEntrada(comandoHist,lista);
         }else printf("Error: No se ha reconocido el número o es menor que 0\n");
     }
 }

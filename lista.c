@@ -96,7 +96,7 @@ tPosL last(tList list){
 
 
 // getItem
-char* getItem (tPosL pos, tList list){
-    return pos->data; // Obtiene datos guardados en ese nodo y lo devuelve
+void getElement(tPosL pos, char* element, tList list){
+    strcpy(element,pos->data); // Devolvemos una copia para evitar modificaciones accidentales
 }
 // getItem
