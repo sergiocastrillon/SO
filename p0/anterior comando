@@ -1,0 +1,39 @@
+// Copia de "comando" antes de simplificar el código
+// El nuevo "comando" sorprendentemente funciona asi que NO USAR este.
+
+void comando(char* trozos[], int ntrozos, tList lista){
+    char* error;
+    bool ejecucion = true;
+    char comandoHist[MAX];
+    if(ntrozos > 1){
+        // Obtenemos la orden de la lista asignada al número introducido
+        long n = strtol(trozos[1],&error,10);
+        if(error!=trozos[1] && n >=0){
+            tPosL pos = lista;
+            int i = 0;
+            while(i<n && pos != NULL){
+                pos = next(pos,lista);
+                i++;
+            }
+            getElement(pos,comandoHist,lista);
+            char* trozos1[3];
+            char copia[MAX];
+            strcpy(copia,comandoHist); // Creamos una copia para evitar problemas si la orden del historial es "comando"
+            TrocearCadena(copia,trozos1);
+
+            // Comprobamos si la orden del historial es "comando" si lo es toca mirar el número para evitar bucles
+            if(strcmp(trozos1[0],"comando")==0 && trozos1[1] != NULL){
+                long z = strtol(trozos1[1],&error,10);
+                if(error!=trozos1[1] && n==z){
+                    printf("Error: Detenido el comando por posibilidad de bucle infinito\n");
+                    ejecucion = false;
+                } 
+            }
+        }
+    }else{
+        printf("Error: No se ha reconocido el número o es menor que 0\n");
+        ejecucion = false;
+    }
+
+    if(ejecucion){
+        printf("Ejecutando orden del hist (%s): %s\n",trozos[1],comandoHist);
