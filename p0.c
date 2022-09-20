@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/utsname.h>
 #include <errno.h>
 #include "lista.h"
 #define MAX 30
@@ -31,14 +32,6 @@ void opcionInvalida(char comando[],char opcion[]){
     printf("%s: %s no es una opción válida\n",comando,opcion);
 }
 
-void fin(){
-    printf("Fin del programa\n");
-    // Terminación del programa
-    /* Opciones:
-     * 1. Devolver 1, y que procesarEntrada devuelva bool que se asigne a "terminado" para salir del bucle
-     * 2. Función exit??
-     ? */
-}
 
 void autores(char* trozos[],int ntrozos){
     if(ntrozos==1) printf("Mario : mario.freire\nSergio : s.castrillon\n");
@@ -113,48 +106,57 @@ void fecha(char* trozos[], int ntrozos) {
     else opcionInvalida("fecha", trozos[1]);
 }
 
+void infosis(){
+    struct utsname info;
+    int fallo = 0;
+    fallo = uname(&info);
+    if(fallo != 0) perror("uname failed: ");
+    else{
+        printf("%s %s %s %s %s\n",info.sysname,info.nodename,info.release,info.version,info.machine);
+    }
+}
 
 
 
 
-void procesarEntrada(char entrada[],tList lista){
+
+bool procesarEntrada(char entrada[],tList lista){
+    bool continuar = true;
     char* trozos[3]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
     // Si se introduce un espacio al final del comando el programa peta, relacionado con lo de arriba??
     int ntrozos = TrocearCadena(entrada,trozos);
     // Si la cadena está vacía ntrozos = 0, tener en cuenta para comprobación de errores?
     // Las opciones conservan el guión (por ejemplo: fecha "-n")
     if(ntrozos!=0){
-        if(strcmp(trozos[0],"fin") == 0 || strcmp(trozos[0],"salir") == 0 || strcmp(trozos[0],"bye") == 0) fin();
+        if(strcmp(trozos[0],"fin") == 0 || strcmp(trozos[0],"salir") == 0 || strcmp(trozos[0],"bye") == 0) continuar = false;
         else if(strcmp(trozos[0],"autores")==0) autores(trozos,ntrozos);
         else if(strcmp(trozos[0],"pid")==0) pid(trozos,ntrozos);
         else if(strcmp(trozos[0],"carpeta")==0) printf("Prueba 2");
         else if(strcmp(trozos[0],"fecha")==0) fecha(trozos,ntrozos);
         else if(strcmp(trozos[0],"hist")==0) hist(trozos,ntrozos,lista);
         else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista);
-        else if(strcmp(trozos[0],"infosis")==0) printf("Prueba 6");
+        else if(strcmp(trozos[0],"infosis")==0) infosis();
         else if(strcmp(trozos[0],"ayuda")==0) printf("Prueba 7");
         else printf("Comando no reconocido\n");
         // Estructura if else?? Funciona aparentemente
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
         // para evitar usar parentesis y dificultando la lectura del codigo
     }
-
+    return continuar;
 }
 
 
 
 int main() {
-    int terminado = -8;
+    bool continuar = true;
     tList lista;
     CreateList(&lista);
-    while (terminado!=0){
+    while (continuar){
         imprimirPrompt();
         char entrada[20];
         leerEntrada(entrada,lista);
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
-        procesarEntrada(entrada,lista);
-
-        terminado++;
+        continuar = procesarEntrada(entrada,lista);
     }
     tPosL i = lista; // Eliminar fugas de memoria valgrind??
     while(i!=NULL){
@@ -169,7 +171,10 @@ int main() {
 
 void comando(char* trozos[], int ntrozos, tList lista){
     char* error;
+    bool ejecucion = true;
+    char comandoHist[MAX];
     if(ntrozos > 1){
+        // Obtenemos la orden de la lista asignada al número introducido
         long n = strtol(trozos[1],&error,10);
         if(error!=trozos[1] && n >=0){
             tPosL pos = lista;
@@ -178,18 +183,28 @@ void comando(char* trozos[], int ntrozos, tList lista){
                 pos = next(pos,lista);
                 i++;
             }
-            char comandoHist[MAX];
             getElement(pos,comandoHist,lista);
             char* trozos1[3];
             char copia[MAX];
-            strcpy(copia,comandoHist); // Se borra N si el historial contiene la orden "comando N"
+            strcpy(copia,comandoHist); // Creamos una copia para evitar problemas si la orden del historial es "comando"
             TrocearCadena(copia,trozos1);
-            if(strcmp(trozos1[0],"comando")==0){
+
+            // Comprobamos si la orden del historial es "comando" si lo es toca mirar el número para evitar bucles
+            if(strcmp(trozos1[0],"comando")==0 && trozos1[1] != NULL){
                 long z = strtol(trozos1[1],&error,10);
-                if(error!=trozos1[1] && n==z) printf("Error: Detenido el comando por posibilidad de bucle infinito\n");
-                else procesarEntrada(comandoHist,lista);
-            } else procesarEntrada(comandoHist,lista);
-            //printf("%s",comandoHist);
-        }else printf("Error: No se ha reconocido el número o es menor que 0\n");
+                if(error!=trozos1[1] && n==z){
+                    printf("Error: Detenido el comando por posibilidad de bucle infinito\n");
+                    ejecucion = false;
+                } 
+            }
+        }
+    }else{
+        printf("Error: No se ha reconocido el número o es menor que 0\n");
+        ejecucion = false;
+    }
+
+    if(ejecucion){
+        printf("Ejecutando orden del hist (%s): %s\n",trozos[1],comandoHist);
+        procesarEntrada(comandoHist,lista);
     }
 }

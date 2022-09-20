@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#ifndef LISTA_H
+#define LISTA_H
+
 
 typedef struct tNode* tPosL;
 struct tNode{
@@ -21,3 +24,5 @@ tPosL next(tPosL pos, tList L); // Comprobado
 tPosL first(tList list);
 tPosL last(tList list); // Comprobado
 void getElement (tPosL pos, char* item, tList L); // Comprobado
+
+#endif

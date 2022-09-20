@@ -5,11 +5,7 @@ bool isEmptyList(tList list){
 }
 
 void CreateList(tList* list){
-    tPosL temp;
-    temp = calloc(1,sizeof(struct tNode));
-    //temp -> sig = NULL;
-    strcpy(temp->data,"\0");
-    *list = temp;
+    *list = calloc(1,sizeof(struct tNode));
 }
 
 bool InsertElement (char item[], tList list){
