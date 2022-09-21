@@ -9,7 +9,7 @@
 
 typedef struct tNode* tPosL;
 struct tNode{
-    char data[20];
+    char data[40]; // Evitar segmentation faults por muchos carácteres
     tPosL sig;
 };
 typedef tPosL tList;

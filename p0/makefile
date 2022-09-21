@@ -15,7 +15,8 @@ execute: # Permite correr el ejecutable, solo si antes existe (make executable e
 	./exec
 
 valgrind: # Generación automática de un informe de valgrind
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-report.txt ./exec
+	# valgrind --show-reachable=yes --leak-check=full --log-file=valgrind-report.txt ./exec
+	 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-report.txt ./exec
 
 clean: # Borra todos los .o, .txt y el ejecutable del programa
 	rm -f *.o *.txt p0

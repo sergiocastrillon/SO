@@ -10,7 +10,7 @@
 #include <errno.h> 
 #include "lista.h"
 
-#define MAX 30
+#define MAX 40
 
 void comando(char* trozos[], int ntrozos, tList lista, char entrada[]);
 
@@ -26,7 +26,12 @@ void imprimirPrompt(){
 }
 
 void leerEntrada(char entrada[],tList lista){
+    char clear[2];
     fgets(entrada, MAX + 1, stdin);
+    // Limpieza de stdin en caso de que algún usuario exceda el maximo de carácteres que lee fgets
+    while (strchr(entrada, '\n') == NULL && clear[0] != '\n') 
+      fgets(clear, 2, stdin);
+    clear[0] = 0;
     entrada[strcspn(entrada,"\n")]=0; // Eliminar problemas que pueda crear el \n que añade fgets
     InsertElement(entrada,lista); // Si InsertElement fuera en procesarEntrada no se podría llamar
     // a la función para la orden comando
@@ -145,7 +150,7 @@ void carpeta(char* trozos[],int ntrozos){
 
 bool procesarEntrada(char entrada[],tList lista){
     bool continuar = true;
-    char* trozos[3]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
+    char* trozos[50]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
     // Si se introduce un espacio al final del comando el programa peta, relacionado con lo de arriba??
     char copia[MAX];
     strcpy(copia,entrada);
@@ -178,7 +183,7 @@ int main() {
     CreateList(&lista);
     while (continuar){
         imprimirPrompt();
-        char entrada[20];
+        char entrada[MAX];
         leerEntrada(entrada,lista);
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
         continuar = procesarEntrada(entrada,lista);
