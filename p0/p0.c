@@ -7,8 +7,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <sys/utsname.h>
-#include <errno.h>
+#include <errno.h> 
 #include "lista.h"
+
 #define MAX 30
 
 void comando(char* trozos[], int ntrozos, tList lista, char entrada[]);
@@ -127,7 +128,18 @@ void infosis(){
     }
 }
 
+void carpeta(char* trozos[],int ntrozos){
+  char carpeta_actual[100];
+  if(ntrozos == 1){
+    char *error = getcwd(carpeta_actual,100);
+    if (error != NULL) printf("%s\n",carpeta_actual );
+    else perror("No fue posible obtener la ruta del directorio");
 
+  }else if(ntrozos == 2){ 
+	    int error = chdir(trozos[1]);
+    if (error != 0) perror("No fue posible cambiar de directorio");
+  }
+}
 
 
 
@@ -144,7 +156,7 @@ bool procesarEntrada(char entrada[],tList lista){
         if(strcmp(trozos[0],"fin") == 0 || strcmp(trozos[0],"salir") == 0 || strcmp(trozos[0],"bye") == 0) continuar = false;
         else if(strcmp(trozos[0],"autores")==0) autores(trozos,ntrozos);
         else if(strcmp(trozos[0],"pid")==0) pid(trozos,ntrozos);
-        else if(strcmp(trozos[0],"carpeta")==0) printf("Prueba 2");
+        else if(strcmp(trozos[0],"carpeta")==0) carpeta(trozos,ntrozos);
         else if(strcmp(trozos[0],"fecha")==0) fecha(trozos,ntrozos);
         else if(strcmp(trozos[0],"hist")==0) hist(trozos,ntrozos,lista);
         else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista,copia);
@@ -189,20 +201,29 @@ void comando(char* trozos[], int ntrozos, tList lista,char entrada[]){
     if(ntrozos > 1){
         // Obtenemos la orden de la lista asignada al número introducido
         long n = strtol(trozos[1],&error,10);
-        if(error!=trozos[1] && n >=0){
+        if(error != trozos[1] && n >= 0){
             tPosL pos = lista;
             int i = 0;
             while(i<n && pos != NULL){
                 pos = next(pos,lista);
                 i++;
             }
-            getElement(pos,comandoHist,lista);
-            if(strcmp(comandoHist,entrada)==0){
-            // Comprobamos si la orden del historial es la misma introducida en este ciclo
+            if(pos == NULL){
+                ejecucion = false;
+                printf("Error: No existe una orden con ese número\n");
+            }else{
+                getElement(pos,comandoHist,lista);
+                if(strcmp(comandoHist,entrada)==0){
+                // Comprobamos si la orden del historial es la misma introducida en este ciclo
                     printf("Error: Detenido el comando por posibilidad de bucle infinito\n");
                     ejecucion = false;
+                }
             }
-        }
+            
+        }else{
+            ejecucion = false;
+            printf("El número debe ser 0 o mayor\n");
+        } 
     }else{
         printf("Error: No se ha reconocido el número o es menor que 0\n");
         ejecucion = false;
