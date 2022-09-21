@@ -1,5 +1,5 @@
 // Sergio Castrillón | s.castrillon
-// Mario Freire | 
+// Mario Freire | mario.freire
 
 #include <stdio.h>
 #include <string.h>
@@ -48,6 +48,7 @@ void autores(char* trozos[],int ntrozos){
 
 void pid(char* trozos[],int ntrozos){
     pid_t nprocess;
+
     if(ntrozos == 1){
     nprocess = getpid();
     printf("Pid de la shell: %d\n",nprocess);
@@ -55,7 +56,6 @@ void pid(char* trozos[],int ntrozos){
         nprocess = getppid();
         printf("Pid del padre de la shell: %d\n",nprocess);
     }else opcionInvalida(trozos[0],trozos[1]);
-    
 }
 
 void hist(char* trozos[],int ntrozos,tList lista){
@@ -63,7 +63,7 @@ void hist(char* trozos[],int ntrozos,tList lista){
     if(ntrozos == 1){ // No se introdujo ninguna opción, imprimir historial
         int x = 0;
         for(tPosL i = lista; i!= NULL; i = next(i,lista)){
-            char comando[20];
+            char comando[MAX];
             getElement(i,comando,lista);
             printf("%d -> %s\n",x,comando);
             x++;
@@ -102,8 +102,8 @@ void fecha(char* trozos[], int ntrozos) {
 
     struct tm tiempoLocal = *localtime(&t);
 
-    char fecha[70];
-    char hora[70];
+    char fecha[100];
+    char hora[100];
 // Definimos el formato en el que se muestra el tiempo
     char *formato1 = "%d/%m/%Y";
     char *formato2 = "%H:%M:%S";
