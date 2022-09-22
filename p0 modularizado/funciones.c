@@ -1,61 +1,4 @@
-// Sergio Castrillón | s.castrillon
-// Mario Freire | mario.freire
-
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <time.h>
-#include <sys/utsname.h>
-#include <errno.h> 
-#include "lista.h"
-
-#define MAX 40
-
-
-// Declaración de funciones
-
-int TrocearCadena(char * cadena, char * trozos[]);
-void imprimirPrompt();
-void leerEntrada(char entrada[],tList lista);
-bool procesarEntrada(char entrada[],tList lista);
-void opcionInvalida(char comando[],char opcion[]);
-void autores(char* trozos[],int ntrozos);
-void pid(char* trozos[],int ntrozos);
-void carpeta(char* trozos[],int ntrozos);
-void fecha(char* trozos[], int ntrozos);
-void hist(char* trozos[],int ntrozos,tList lista);
-void comando(char* trozos[], int ntrozos, tList lista, char entrada[]);
-void infosis();
-void ayuda(char* trozos[], int ntrozos);
-
-
-
-// ***********
-
-
-int main() {
-    bool continuar = true;
-    tList lista;
-    CreateList(&lista);
-    while (continuar){
-        imprimirPrompt();
-        char entrada[MAX];
-        leerEntrada(entrada,lista);
-        //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
-        continuar = procesarEntrada(entrada,lista);
-    }
-    tPosL i = lista; // Eliminar fugas de memoria valgrind??
-    while(i!=NULL){
-        tPosL x = next(i,lista);
-        free(i);
-        i = x;
-    }
-    return 0;
-}
-
-
-
+#include "funciones.h"
 
 // TrocearCadena
 
@@ -84,7 +27,7 @@ void leerEntrada(char entrada[],tList lista){
     fgets(entrada, MAX + 1, stdin);
     // Limpieza de stdin en caso de que algún usuario exceda el maximo de carácteres que lee fgets
     while (strchr(entrada, '\n') == NULL && clear[0] != '\n') 
-      fgets(clear, 2, stdin);
+        fgets(clear, 2, stdin);
     clear[0] = 0;
     entrada[strcspn(entrada,"\n")]=0; // Eliminar problemas que pueda crear el \n que añade fgets
     InsertElement(entrada,lista); // Si InsertElement fuera en procesarEntrada no se podría llamar
@@ -134,6 +77,7 @@ void opcionInvalida(char comando[],char opcion[]){
 }
 
 // ***********
+
 
 
 // autores
@@ -314,6 +258,9 @@ void infosis(){
 
 // ***********
 
+
+// ayuda
+
 void ayuda(char* trozos[], int ntrozos){
     if (ntrozos == 1) printf( "autores pid carpeta fecha hist comando infosis ayuda fin salir bye\n");
     else{
@@ -334,3 +281,5 @@ void ayuda(char* trozos[], int ntrozos){
         else printf("ayuda: Comando no reconocido\n");
     }
 }
+
+// *********

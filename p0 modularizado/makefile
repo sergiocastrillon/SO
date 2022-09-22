@@ -1,12 +1,12 @@
-all: clean executable execute  #valgrind # Modificadores para el comando make
+all: clean executable execute #valgrind #  # Modificadores para el comando make
 # valgrind ejecuta el programa por si mismo, si eliminas la orden, recuerda
 # añadir "execute" para que el programa se ejecute tras compilarlo
 
 executable: p0.o lista.o # Crea el ejecutable
-	gcc -Wall -o exec p0.o lista.o
+	gcc -Wall -o exec p0.o lista.o funciones.o
 
 p0.o: # Solo crea el archivo de salida de p0.c
-	gcc -c p0.c 
+	gcc -c p0.c funciones.c
 
 lista.o: # """" de lista.c
 	gcc -c lista.c
