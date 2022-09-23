@@ -83,8 +83,7 @@ void leerEntrada(char entrada[],tList lista){
     strcpy(clear,"\0"); // Evitar fallos de valgrind
     fgets(entrada, MAX + 1, stdin);
     // Limpieza de stdin en caso de que algún usuario exceda el maximo de carácteres que lee fgets
-    while (strchr(entrada, '\n') == NULL && clear[0] != '\n') 
-      fgets(clear, 2, stdin);
+    while (strchr(entrada, '\n') == NULL && clear[0] != '\n') fgets(clear, 2, stdin);
     clear[0] = 0;
     entrada[strcspn(entrada,"\n")]=0; // Eliminar problemas que pueda crear el \n que añade fgets
     InsertElement(entrada,lista); // Si InsertElement fuera en procesarEntrada no se podría llamar

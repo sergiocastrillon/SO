@@ -1,1 +1,0 @@
-CMakeLists.txt not found in /home/sergio/Documentos/GitHub/SO/p0 Select CMakeLists.txt

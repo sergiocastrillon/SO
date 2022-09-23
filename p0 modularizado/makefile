@@ -1,4 +1,4 @@
-all: clean executable execute #valgrind #  # Modificadores para el comando make
+all: clean executable valgrind #execute  # Modificadores para el comando make
 # valgrind ejecuta el programa por si mismo, si eliminas la orden, recuerda
 # añadir "execute" para que el programa se ejecute tras compilarlo
 
