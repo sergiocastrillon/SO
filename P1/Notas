@@ -1,0 +1,37 @@
+bucle para el stats (y otras funciones) si quieres procesar varios archivos ??
+create ignora si hay mas de un archivo para crear (solo crea el primer archivo pasado al comando)
+
+Si intentas crear un archivo con el mismo nombre (la función te devuelve error): Imposible crear: File exists
+Para un directorio con el mismo nombre que otro te devuelve el mismo error
+
+
+------xr-x. se crea sin modificar
+
+
+Los ficheros creados con create devuelven los siguientes permisos y creadores.
+-rwxr-xr-x. 1 sergio sergio 0 sep 29 13:41 permisos
+
+mkdir sirve para crear directorios (revisar sintaxis)
+para crear ficheros (aparentemente) hay que usar open, que con una opción te crea el fichero si no existe.
+
+
+
+
+create -f crea un fichero con el nombre dado (y respeta las extensiones del archivo)
+
+stat muestra (sin ninguna opción) el tamaño y el nombre del fichero o carpeta (muestra la misma información sea un nombre o carpeta)
+
+-> stat pruebaa
+    4096  pruebaa
+    
+-> stat hola.ml
+    27  hola.ml
+
+
+
+list (sin ninguna opción) muestra los archivos del directorio (necesario poner "." para referirse al directorio actual
+con su tamaño correspondiente.
+
+
+
+
