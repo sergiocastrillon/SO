@@ -1,11 +1,58 @@
 #include "funciones1.h"
 
-void create(char * trozos[], int ntrozos){
-    if(ntrozos == 1) {
-        char direccion[100];
+
+
+
+
+char LetraTF (mode_t m){
+     switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+        case S_IFSOCK: return 's'; /*socket */
+        case S_IFLNK: return 'l'; /*symbolic link*/
+        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFBLK: return 'b'; /*block device*/
+        case S_IFDIR: return 'd'; /*directorio */ 
+        case S_IFCHR: return 'c'; /*char device*/
+        case S_IFIFO: return 'p'; /*pipe*/
+        default: return '?'; /*desconocido, no deberia aparecer*/
+     }
+}
+
+
+char * ConvierteModo2 (mode_t m){
+    static char permisos[12];
+    strcpy (permisos,"---------- ");
+    
+    permisos[0]=LetraTF(m);
+    if (m&S_IRUSR) permisos[1]='r';    /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r';    /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r';    /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s';    /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
+    
+    return permisos;
+}
+
+
+
+
+
+void directorio(){
+    char direccion[100];
         char *error = getcwd(direccion,100);
         if (error != NULL) printf("%s\n",direccion);
         else perror("No fue posible obtener la ruta del directorio");
+}
+
+void create(char * trozos[], int ntrozos){
+    if(ntrozos == 1) {
+        directorio();
     }
     // Llamada a carpeta ??
     else{
@@ -14,10 +61,7 @@ void create(char * trozos[], int ntrozos){
             if(ntrozos >= 3){
                 if(open(trozos[2], O_CREAT|O_EXCL, permisos) < 0) perror("create failed: ");
             }else{
-                char direccion[100];
-            char *error = getcwd(direccion,100);
-            if (error != NULL) printf("%s\n",direccion);
-            else perror("No fue posible obtener la ruta del directorio");
+                directorio();
             }
     
         }else{ // Crear directorio con lo que está en trozos[1]
@@ -25,5 +69,22 @@ void create(char * trozos[], int ntrozos){
         if(mkdir(trozos[1],permisos) == -1) perror("create failed: ");
 
         }
+    }
+}
+
+void stat_o(char * trozos[], int ntrozos){
+    if(ntrozos == 2){
+        if(strcmp(trozos[1],"-long")==0){ // Información completa
+            printf("Holaa");
+        }else if(strcmp(trozos[1],"-acc")==0){ // Información de último acceso
+            printf("Holab");
+        }else if(strcmp(trozos[1],"-link")==0){ // Información enlace simbolico
+            printf("Holac");
+        }else{ // Información corta de uno o varios archivos
+            struct stat estadisticas;
+            if(lstat(trozos[1], &estadisticas) == -1) perror("stat failed:");
+            else printf("%d\t %s\n",estadisticas.st_size,trozos[1]);
+        }
+
     }
 }
