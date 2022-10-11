@@ -73,18 +73,40 @@ void create(char * trozos[], int ntrozos){
 }
 
 void stat_o(char * trozos[], int ntrozos){
-    if(ntrozos == 2){
-        if(strcmp(trozos[1],"-long")==0){ // Información completa
-            printf("Holaa");
-        }else if(strcmp(trozos[1],"-acc")==0){ // Información de último acceso
-            printf("Holab");
-        }else if(strcmp(trozos[1],"-link")==0){ // Información enlace simbolico
-            printf("Holac");
-        }else{ // Información corta de uno o varios archivos
+    if(ntrozos >= 2){
+        bool lng,acc,link;
+        int control = 0;
+        for(int i = 1; i < ntrozos; i++){
+            if(strcmp(trozos[i],"-long") == 0){
+                lng = true;
+                control++;
+            } 
+            if(strcmp(trozos[i],"-acc") == 0){
+                acc = true;
+                control++;
+            }
+            if(strcmp(trozos[i],"-link") == 0){
+                link = true;
+                control++;
+            }
+        }
+        if(lng || acc || link){
+            struct stat estadisticas;
+            if(lstat(trozos[control+2], &estadisticas) == -1) perror("stat failed:");
+            else{
+                if(acc) printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // acc
+                else if(link) printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // link
+                else printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // long
+            } 
+        }else{// Información corta de uno o varios archivos
             struct stat estadisticas;
             if(lstat(trozos[1], &estadisticas) == -1) perror("stat failed:");
             else printf("%d\t %s\n",estadisticas.st_size,trozos[1]);
         }
+        }else directorio();
+    
+        
+             
 
     }
 }
