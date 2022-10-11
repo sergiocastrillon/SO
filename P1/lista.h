@@ -5,11 +5,11 @@
 
 #ifndef LISTA_H
 #define LISTA_H
-
+#define MAX 300
 
 typedef struct tNode* tPosL;
 struct tNode{
-    char data[50]; // Evitar segmentation faults por muchos carácteres
+    char data[MAX + 1]; // Evitar segmentation faults por muchos carácteres
     tPosL sig;
 };
 typedef tPosL tList;

@@ -7,7 +7,6 @@
 #include "funciones1.h"
 
 
-#define MAX 40
 
 int TrocearCadena(char * cadena, char * trozos[]);
 void imprimirPrompt();

@@ -3,7 +3,7 @@ all: clean executable valgrind #execute  # Modificadores para el comando make
 # añadir "execute" para que el programa se ejecute tras compilarlo
 
 executable: p1.o lista.o funciones.o # Crea el ejecutable
-	gcc -Wall -o exec p1.o lista.o funciones.o funciones1.o
+	gcc -Wall -o p1 p1.o lista.o funciones.o funciones1.o
 
 p0.o: # Solo crea el archivo de salida de p0.c
 	gcc -c p1.c
@@ -15,10 +15,10 @@ lista.o: # """" de lista.c
 	gcc -c lista.c
 
 execute: # Permite correr el ejecutable, solo si antes existe (make executable execute)
-	./exec
+	./p1
 
 valgrind: # Generación automática de un informe de valgrind
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-report.txt ./exec
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-report.txt ./p1
 	# valgrind --show-reachable=yes --leak-check=full --log-file=valgrind-report.txt ./exec
 
 clean: # Borra todos los .o, .txt y el ejecutable del programa

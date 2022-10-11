@@ -72,6 +72,62 @@ void create(char * trozos[], int ntrozos){
     }
 }
 
+
+void statAux(char * fichero, bool lng, bool acc, bool link){
+    if(lng || acc || link){
+            struct stat e; // Struct con las estadisticas
+            if(lstat(fichero, &e) == -1) perror("stat failed");
+            else{
+                struct tm timea;
+                struct tm timem;
+                char timeacc[50];
+                char timemod[50];
+                char symlink[50];
+
+                struct group *group;
+                struct passwd *user;
+
+                char *permisos = ConvierteModo2(e.st_mode);
+                
+                localtime_r(&e.st_mtime, &timem);
+                strftime(timemod, 50, "%Y/%m/%d-%H:%M", &timem);
+                localtime_r(&e.st_atime, &timea);
+                strftime(timeacc, 50, "%Y/%m/%d-%H:%M", &timea);
+                
+                if((user = getpwuid(e.st_uid)) == NULL) perror(""); // No se si perror funciona aqui
+                if((group = getgrgid(e.st_gid)) == NULL) perror("");
+
+                // Print information
+                if(link){
+                    
+                    if(readlink(fichero, symlink, 50) == -1){ // Si no es un enlace simbólico
+                        printf("%s   %d (%d)   %s   %s %s    %d %s\n",timeacc,e.st_nlink,e.st_ino,user->pw_name,
+                        group->gr_name,permisos,e.st_size,fichero);
+                    }else printf("%s   %d (%d)   %s   %s %s    %d %s -> %s\n",timemod,e.st_nlink,e.st_ino,
+                    user->pw_name,group->gr_name,permisos,e.st_size,fichero,symlink); // link
+
+                }else if(acc){
+
+                    localtime_r(&e.st_atime, &timea);
+                    strftime(timeacc, 50, "%Y/%m/%d-%H:%M", &timea);
+                    printf("%s   %d (%d)   %s   %s %s    %d %s\n",timeacc,e.st_nlink,e.st_ino,
+                    user->pw_name,group->gr_name,permisos,e.st_size,fichero); // acc
+                }
+                else{
+                    printf("%s   %d (%d)   %s   %s %s    %d %s\n",timemod,e.st_nlink,e.st_ino,user->pw_name,
+                    group->gr_name,permisos,e.st_size,fichero); // long
+                } 
+            } 
+        }else{// Información corta de uno o varios archivos
+            struct stat e;
+            if(lstat(fichero, &e) == -1) perror("stat failed:");
+            else printf("%d\t %s\n",e.st_size,fichero);
+        }
+}
+
+
+
+
 void stat_o(char * trozos[], int ntrozos){
     if(ntrozos >= 2){
         bool lng,acc,link;
@@ -90,23 +146,8 @@ void stat_o(char * trozos[], int ntrozos){
                 control++;
             }
         }
-        if(lng || acc || link){
-            struct stat estadisticas;
-            if(lstat(trozos[control+2], &estadisticas) == -1) perror("stat failed:");
-            else{
-                if(acc) printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // acc
-                else if(link) printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // link
-                else printf("%d\t %s\n",estadisticas.st_size,trozos[1]); // long
-            } 
-        }else{// Información corta de uno o varios archivos
-            struct stat estadisticas;
-            if(lstat(trozos[1], &estadisticas) == -1) perror("stat failed:");
-            else printf("%d\t %s\n",estadisticas.st_size,trozos[1]);
+        for(int i = control + 1; i < ntrozos; i++){
+            statAux(trozos[i],lng,acc,link);
         }
-        }else directorio();
-    
-        
-             
-
-    }
+    }else directorio();
 }
