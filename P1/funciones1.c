@@ -149,5 +149,52 @@ void stat_o(char * trozos[], int ntrozos){
         for(int i = control + 1; i < ntrozos; i++){
             statAux(trozos[i],lng,acc,link);
         }
+        if(control + 1 == ntrozos) directorio();
     }else directorio();
+}
+
+
+void listAux(char * directorio, bool reca, bool recb, bool hid){
+    if(!reca && !recb){
+        DIR *d;
+        struct dirent *fic;
+        d = opendir(directorio);
+        if (d) {
+            while ((fic = readdir(d)) != NULL) {
+                // No funciona bien el if
+                if(!hid || fic->d_name[0] != '.') printf("%s\n", fic->d_name);
+        }
+        closedir(d);
+        }
+    }
+    
+}
+
+void list(char * trozos[], int ntrozos){
+    if(ntrozos < 2) directorio();
+    else{
+        bool reca,recb,hid;
+        int control = 0;
+
+        for(int i = 1; i < ntrozos; i++){
+            if(strcmp(trozos[i],"-reca") == 0){
+                reca = true;
+                control++;
+            } 
+            if(strcmp(trozos[i],"-recb") == 0){
+                recb = true;
+                control++;
+            }
+            if(strcmp(trozos[i],"-hid") == 0){
+                hid = true;
+                control++;
+            }
+        }
+
+        for(int i = control + 1; i < ntrozos; i++){
+            listAux(trozos[i],reca,recb,hid);
+        }
+        if(control + 1 == ntrozos) directorio();
+    }
+    
 }

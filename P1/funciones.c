@@ -64,6 +64,7 @@ bool procesarEntrada(char entrada[],tList lista){
         else if(strcmp(trozos[0],"ayuda")==0) ayuda(trozos,ntrozos);
         else if(strcmp(trozos[0],"create")==0) create(trozos,ntrozos);
         else if(strcmp(trozos[0],"stat")==0) stat_o(trozos,ntrozos);
+        else if(strcmp(trozos[0],"list")==0) list(trozos,ntrozos);
         else printf("Comando no reconocido\n");
         // Estructura if else?? Funciona aparentemente
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)

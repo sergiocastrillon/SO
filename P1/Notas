@@ -1,3 +1,6 @@
+recb tiene prioridad sobre reca, rec es compatible con -hid.
+
+
 bucle para el stats (y otras funciones) si quieres procesar varios archivos ??
 create ignora si hay mas de un archivo para crear (solo crea el primer archivo pasado al comando)
 
