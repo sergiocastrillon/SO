@@ -155,19 +155,58 @@ void stat_o(char * trozos[], int ntrozos){
 
 
 void listAux(char * directorio, bool reca, bool recb, bool hid){
+    printf("*********  %s\n",directorio);
     if(!reca && !recb){
         DIR *d;
         struct dirent *fic;
         d = opendir(directorio);
         if (d) {
             while ((fic = readdir(d)) != NULL) {
-                // No funciona bien el if
-                if(!hid || fic->d_name[0] != '.') printf("%s\n", fic->d_name);
+                if(hid || fic->d_name[0] != '.') printf("%s\n", fic->d_name);
         }
         closedir(d);
         }
+    }else{
+        // reca funciona como una cola, la primera carpeta en encontrarse se imprime
+        // recb funciona como una pila, la ultima carpeta en encontrarse se imprime
+        if(reca){
+            DIR *d;
+            struct dirent *fic;
+            tList ldir;
+            // Lista para guardar directorios
+            CreateList(&ldir);
+
+            d = opendir(directorio);
+            if (d) {
+                while ((fic = readdir(d)) != NULL){
+                    // Guardamos en la listas los directorios (distintos de . y ..)
+                    if(fic->d_type == DT_DIR && strcmp(fic->d_name,".") != 0
+                    && strcmp(fic->d_name,"..") != 0){
+                        if(fic->d_name[0] != '.' || hid){
+                            // Encadenamos el directorio a la dirección actual para
+                        // que el ordenador pueda acceder a carpetas con una profundidad
+                        // mayor a 1
+                        char destino[100];
+                        strcpy(destino,directorio);
+                        strcat(destino,"/");
+                        strcat(destino,fic->d_name);
+                        InsertElement(destino,ldir);
+                        }
+                    } 
+
+                    if(hid || fic->d_name[0] != '.') printf("%s\n", fic->d_name);
+                }
+                closedir(d);
+            }else printf("Fallo\n");
+            if(!isEmptyList(ldir)){
+                for(tPosL pos = first(ldir); pos != NULL; pos = next(pos,ldir)){
+                    char directorio1[50];
+                    getElement(pos,directorio1,ldir);
+                    listAux(directorio1,reca,recb,hid);
+            }
+            }
+        }   
     }
-    
 }
 
 void list(char * trozos[], int ntrozos){

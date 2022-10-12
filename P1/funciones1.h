@@ -9,6 +9,8 @@
 #include <grp.h>
 #include <dirent.h>
 
+#include "lista.h"
+
 
 char LetraTF (mode_t m);
 char * ConvierteModo2 (mode_t m);
