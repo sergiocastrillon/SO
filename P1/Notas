@@ -1,6 +1,8 @@
 delete borrar ficheros y directorios, varios por ejecución, no hay que indicarle de que tipo es cada uno y se pueden mezclar ficheros y
 directorios en la misma ejecución
 
+deltree funciona sin ruta (pasandole la carpeta sin más lo borra)
+
 
 bucle para el stats (y otras funciones) si quieres procesar varios archivos ??
 create ignora si hay mas de un archivo para crear (solo crea el primer archivo pasado al comando)
