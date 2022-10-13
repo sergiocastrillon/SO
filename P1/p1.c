@@ -15,12 +15,7 @@ int main() {
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
         continuar = procesarEntrada(entrada,lista);
     }
-    tPosL i = lista; // Eliminar fugas de memoria valgrind??
-    while(i!=NULL){
-        tPosL x = next(i,lista);
-        free(i);
-        i = x;
-    }
+    deleteList(&lista);
     return 0;
 }
 

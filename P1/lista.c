@@ -100,3 +100,17 @@ void getElement(tPosL pos, char* element, tList list){
     strcpy(element,pos->data); // Devolvemos una copia para evitar modificaciones accidentales
 }
 // getItem
+
+// deleteList
+void deleteList(tList *list){
+    tPosL i = *list;
+    while(i!=NULL){
+        tPosL x = i->sig;
+        // No volver a usar una lista borrada así
+        // el insertElement de la lista no detecta lista a NULL, el primer elemento
+        // de la lista debe estar reservado (usar CreateList otra vez)
+        free(i);
+        i = x;
+    }
+    *list = NULL;
+}

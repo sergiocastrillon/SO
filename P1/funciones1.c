@@ -78,6 +78,7 @@ void statAux(char * fichero, bool lng, bool acc, bool link){
             int error = lstat(fichero, &e);
             if(error == -1) perror("stat failed");
             else{
+                // Datos de tiempo (modificación y acceso)
                 struct tm timea;
                 struct tm timem;
                 char timeacc[50];
@@ -95,13 +96,12 @@ void statAux(char * fichero, bool lng, bool acc, bool link){
                 strftime(timeacc, 50, "%Y/%m/%d-%H:%M", &timea);
                 char time[50];
                 strcpy(time,"ok");
-                
+                // Obtenemos nombre de usuario y grupo
                 if((user = getpwuid(e.st_uid)) == NULL) perror(""); // No se si perror funciona aqui
                 if((group = getgrgid(e.st_gid)) == NULL) perror("");
 
-                // Print information
-               if(link){
-                 
+                if(link){
+
                     if(acc) strcpy(time,timeacc);
                     else strcpy(time,timemod);
                     
@@ -157,12 +157,13 @@ void stat_o(char * trozos[], int ntrozos){
 
 void listAux(char * directorio, bool reca, bool recb, bool hid){
     // Si no hay recursividad
-    if(!reca && !recb){
+    if(!reca && !recb){ // Si el list no es recursivo
         char destino[MAX];
         struct stat e;
-        printf("*********  %s\n",directorio);
         DIR *d;
         struct dirent *fic;
+
+        printf("*********  %s\n",directorio);
         d = opendir(directorio);
         if (d) {
             while ((fic = readdir(d)) != NULL) {
@@ -177,7 +178,9 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
             closedir(d);
         }
     }else{
-        // reca funciona como una cola, la primera carpeta en encontrarse se imprime
+
+        // reca
+
         if(reca){ // Recursividad hacia abajo
             printf("*********  %s\n",directorio);
             DIR *d;
@@ -199,7 +202,7 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
                     strcat(destino,fic->d_name);
                     struct stat e;
                     // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(lstat(destino, &e) == -1) perror("Prueba");
+                    if(lstat(destino, &e) == -1) perror("list error");
                     if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                     && strcmp(fic->d_name,"..") != 0){
                         if(fic->d_name[0] != '.' || hid) InsertElement(destino,ldir);
@@ -217,13 +220,11 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
                     listAux(directorio1,reca,recb,hid);
                 }
             }
-            tPosL i = ldir; // Eliminar fugas de memoria valgrind??
-            while(i!=NULL){
-            tPosL x = next(i,ldir);
-            free(i);
-            i = x;
-            }
-        }else{ // Recursivididad hacia arriba
+            deleteList(&ldir);
+
+        // recb
+
+        }else{ 
             DIR *d;
             struct dirent *fic;
 
@@ -236,7 +237,7 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
                     strcat(destino,fic->d_name);
                     struct stat e;
                     // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(lstat(destino, &e) == -1) perror("Prueba");
+                    if(lstat(destino, &e) == -1) perror("list error");
                     if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                     && strcmp(fic->d_name,"..") != 0){
                         if(fic->d_name[0] != '.' || hid) listAux(destino,reca,recb,hid);

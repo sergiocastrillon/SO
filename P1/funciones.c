@@ -285,7 +285,7 @@ void ayuda(char* trozos[], int ntrozos){
         else if(strcmp(trozos[1],"infosis")==0) printf("infosis:\t Muestra la información de la máquina que ejecuta el shell\n");
         else if(strcmp(trozos[1],"ayuda")==0)  printf("ayuda [cmd]:\t Imprime un listado de los comandos existentes." 
         " [cmd] muestra informacion a cerca del comando cmd\n");
-        else printf("ayuda: Comando no reconocido\n");
+        else printf("ayuda: %s no encontrado\n",trozos[1]);
     }
 }
 

@@ -1,4 +1,5 @@
-recb tiene prioridad sobre reca, rec es compatible con -hid.
+delete borrar ficheros y directorios, varios por ejecución, no hay que indicarle de que tipo es cada uno y se pueden mezclar ficheros y
+directorios en la misma ejecución
 
 
 bucle para el stats (y otras funciones) si quieres procesar varios archivos ??
