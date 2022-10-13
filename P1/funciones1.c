@@ -157,54 +157,55 @@ void stat_o(char * trozos[], int ntrozos){
 void listAux(char * directorio, bool reca, bool recb, bool hid){
     // Si no hay recursividad
     if(!reca && !recb){
+        char destino[MAX];
+        struct stat e;
         printf("*********  %s\n",directorio);
         DIR *d;
         struct dirent *fic;
         d = opendir(directorio);
         if (d) {
             while ((fic = readdir(d)) != NULL) {
-                if(hid || fic->d_name[0] != '.') statAux(fic->d_name,false,false,false);
+                if(hid || fic->d_name[0] != '.'){
+                    
+                    strcpy(destino,directorio);
+                    strcat(destino,"/");
+                    strcat(destino,fic->d_name);
+                    if(lstat(destino, &e) == -1) perror("");
+                    else printf("%10d  %s\n",e.st_size,fic->d_name);
+                }
             }   
             closedir(d);
         }
     }else{
         // reca funciona como una cola, la primera carpeta en encontrarse se imprime
-        // recb funciona como una pila, la ultima carpeta en encontrarse se imprime
         if(reca){ // Recursividad hacia abajo
             printf("*********  %s\n",directorio);
             DIR *d;
             struct dirent *fic;
             tList ldir;
+
             // Lista para guardar directorios
             CreateList(&ldir);
 
             d = opendir(directorio);
             if (d) {
                 while ((fic = readdir(d)) != NULL){
+                    // Encadenamos el directorio a la dirección actual para
+                    // que el ordenador pueda acceder a carpetas con una profundidad
+                    // mayor a 1
+                    char destino[MAX];
+                    strcpy(destino,directorio);
+                    strcat(destino,"/");
+                    strcat(destino,fic->d_name);
+                    struct stat e;
                     // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(fic->d_type == DT_DIR && strcmp(fic->d_name,".") != 0
+                    if(lstat(destino, &e) == -1) perror("Prueba");
+                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                     && strcmp(fic->d_name,"..") != 0){
-                        if(fic->d_name[0] != '.' || hid){
-                            // Encadenamos el directorio a la dirección actual para
-                        // que el ordenador pueda acceder a carpetas con una profundidad
-                        // mayor a 1
-                        char destino[MAX];
-                        strcpy(destino,directorio);
-                        strcat(destino,"/");
-                        strcat(destino,fic->d_name);
-                        InsertElement(destino,ldir);
-                        }
+                        if(fic->d_name[0] != '.' || hid) InsertElement(destino,ldir);
                     } 
                     if(hid || fic->d_name[0] != '.'){
-                        // Usar una dirección relativa a la carpeta actual
-                        char reldir[MAX];
-                        strcpy(reldir,directorio);
-                        strcat(reldir,"/");
-                        strcat(reldir,fic->d_name);
-                        struct stat e;
-                        // Imprimimos los ficheros y directorios
-                        if(lstat(reldir, &e) == -1) perror("");
-                        else printf("%10d  %s\n",e.st_size,fic->d_name);
+                        printf("%10d  %s\n",e.st_size,fic->d_name);
                     } 
                 }
                 closedir(d);
@@ -216,40 +217,32 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
                     listAux(directorio1,reca,recb,hid);
                 }
             }
+            tPosL i = ldir; // Eliminar fugas de memoria valgrind??
+            while(i!=NULL){
+            tPosL x = next(i,ldir);
+            free(i);
+            i = x;
+            }
         }else{ // Recursivididad hacia arriba
             DIR *d;
             struct dirent *fic;
-            tList ldir;
-            // Lista para guardar directorios
-            CreateList(&ldir);
 
             d = opendir(directorio);
             if (d) {
                 while ((fic = readdir(d)) != NULL){
+                    char destino[MAX];
+                    strcpy(destino,directorio);
+                    strcat(destino,"/");
+                    strcat(destino,fic->d_name);
+                    struct stat e;
                     // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(fic->d_type == DT_DIR && strcmp(fic->d_name,".") != 0
+                    if(lstat(destino, &e) == -1) perror("Prueba");
+                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                     && strcmp(fic->d_name,"..") != 0){
-                        if(fic->d_name[0] != '.' || hid){
-                            // Encadenamos el directorio a la dirección actual para
-                            // que el ordenador pueda acceder a carpetas con una profundidad
-                            // mayor a 1
-                            char destino[MAX];
-                            strcpy(destino,directorio);
-                            strcat(destino,"/");
-                            strcat(destino,fic->d_name);
-                            InsertElement(destino,ldir);
-                        }
+                        if(fic->d_name[0] != '.' || hid) listAux(destino,reca,recb,hid);
                     }
-                    ////
                 }
                 closedir(d);
-            }
-            if(!isEmptyList(ldir)){
-                for(tPosL pos = last(ldir); pos != NULL; pos = previous(pos,ldir)){
-                    char directorio1[MAX];
-                    getElement(pos,directorio1,ldir);
-                    listAux(directorio1,reca,recb,hid);
-                }
             }
             printf("*********  %s\n",directorio);
             d = opendir(directorio);
@@ -267,10 +260,8 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
                         else printf("%10d  %s\n",e.st_size,fic->d_name);
                     }  
                 }
-                closedir(d);
-            
+                closedir(d);   
         }
-
     }
 }
 
