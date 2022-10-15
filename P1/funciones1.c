@@ -74,63 +74,61 @@ void create(char * trozos[], int ntrozos){
 
 void statAux(char * fichero, bool lng, bool acc, bool link){
     if(lng){
-            struct stat e; // Struct con las estadisticas
-            int error = lstat(fichero, &e);
-            if(error == -1) perror("stat failed");
-            else{
-                // Datos de tiempo (modificación y acceso)
-                struct tm timea;
-                struct tm timem;
-                char timeacc[50];
-                char timemod[50];
-                char symlink[50];
+        struct stat e; // Struct con las estadisticas
 
-                struct group *group;
-                struct passwd *user;
+        if(lstat(fichero, &e) == -1) perror("stat failed");
+        else{
+            // Datos de tiempo (modificación y acceso)
+            struct tm timea;
+            struct tm timem;
+            char timeacc[50];
+            char timemod[50];
+            char symlink[50];
 
-                char *permisos = ConvierteModo2(e.st_mode);
+            struct group *group;
+            struct passwd *user;
+
+            char *permisos = ConvierteModo2(e.st_mode);
+            
+            localtime_r(&e.st_mtime, &timem);
+            strftime(timemod, 50, "%Y/%m/%d-%H:%M", &timem);
+            localtime_r(&e.st_atime, &timea);
+            strftime(timeacc, 50, "%Y/%m/%d-%H:%M", &timea);
+            char time[50];
+
+            // Obtenemos nombre de usuario y grupo
+            if((user = getpwuid(e.st_uid)) == NULL) perror(""); // No se si perror funciona aqui
+            if((group = getgrgid(e.st_gid)) == NULL) perror("");
+            // Si acc mostramos la fecha de acceso si no la fecha de modificación
+            if(acc) strcpy(time,timeacc);
+            else strcpy(time,timemod);
+
+            if(link){
+                if(readlink(fichero, symlink, 50) != -1){
+                    strcat(fichero,"->");
+                    strcat(fichero,symlink);
+                }
+                printf("%s   %ld (%ld)   %s   %s %s    %ld %s\n",time,e.st_nlink,e.st_ino,
+                user->pw_name,group->gr_name,permisos,e.st_size,fichero);
                 
-                localtime_r(&e.st_mtime, &timem);
-                strftime(timemod, 50, "%Y/%m/%d-%H:%M", &timem);
-                localtime_r(&e.st_atime, &timea);
-                strftime(timeacc, 50, "%Y/%m/%d-%H:%M", &timea);
-                char time[50];
-                strcpy(time,"ok");
-                // Obtenemos nombre de usuario y grupo
-                if((user = getpwuid(e.st_uid)) == NULL) perror(""); // No se si perror funciona aqui
-                if((group = getgrgid(e.st_gid)) == NULL) perror("");
-
-                if(link){
-
-                    if(acc) strcpy(time,timeacc);
-                    else strcpy(time,timemod);
-                    
-                    int error1 = readlink(fichero, symlink, 50);
-                    if( error1 == -1){ // Si no es un enlace simbólico
-                        printf("%s   %ld (%ld)   %s   %s %s    %ld %s\n",time,e.st_nlink,e.st_ino,user->pw_name,
-                        group->gr_name,permisos,e.st_size,fichero);
-                    }else printf("%s   %ld (%ld)   %s   %s %s    %ld %s -> %s\n",time,e.st_nlink,e.st_ino,
-                    user->pw_name,group->gr_name,permisos,e.st_size,fichero,symlink); // link */
-
-                }else{
-                    if(acc) strcpy(time,timeacc);
-                    else strcpy(time,timemod);
-                    printf("%s   %ld (%ld)   %s   %s %s    %ld %s\n",time,e.st_nlink,e.st_ino,user->pw_name,
-                    group->gr_name,permisos,e.st_size,fichero); // long
-                } 
+            }else{
+                printf("%s   %ld (%ld)   %s   %s %s    %ld %s\n",time,e.st_nlink,e.st_ino,user->pw_name,
+                group->gr_name,permisos,e.st_size,fichero); // long
             } 
-        }else{// Información corta de uno o varios archivos
-            struct stat e;
-            if(lstat(fichero, &e) == -1) perror("stat failed:");
-            else printf("%10ld  %s\n",e.st_size,fichero);
-        }
+        } 
+    }else{// Información corta de uno o varios archivos
+        struct stat e;
+        if(lstat(fichero, &e) == -1) perror("stat failed:");
+        else printf("%10ld  %s\n",e.st_size,fichero);
+    }
 }
 
 
 
 
 void stat_o(char * trozos[], int ntrozos){
-    if(ntrozos >= 2){
+    if(ntrozos < 2) directorio();
+    else{
         bool lng = false,acc = false,link = false;
         int control = 0;
         for(int i = 1; i < ntrozos; i++){
@@ -151,13 +149,114 @@ void stat_o(char * trozos[], int ntrozos){
             statAux(trozos[i],lng,acc,link);
         }
         if(control + 1 == ntrozos) directorio();
-    }else directorio();
+    }
+}
+
+
+
+// Función recursiva auxiliar de list (-reca)
+void recA(char * directorio, bool hid){
+    printf("*********  %s\n",directorio);
+    DIR *d;
+    struct dirent *fic;
+    tList ldir;
+
+    // Lista para guardar directorios
+    CreateList(&ldir);
+
+    d = opendir(directorio);
+    if (d) {
+        while ((fic = readdir(d)) != NULL){
+
+            // Encadenamos el directorio a la dirección actual para
+            // que el ordenador pueda acceder a carpetas con una profundidad
+            // mayor a 1
+            char destino[MAX];
+            strcpy(destino,directorio);
+            strcat(destino,"/");
+            strcat(destino,fic->d_name);
+            struct stat e;
+            // Guardamos en la listas los directorios (distintos de . y ..)
+            if(lstat(destino, &e) == -1) perror("list error");
+            else{
+                if(hid || fic->d_name[0] != '.'){
+                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
+                    && strcmp(fic->d_name,"..") != 0) InsertElement(destino,ldir);
+
+                    printf("%10ld  %s\n",e.st_size,fic->d_name); 
+                } 
+            }
+            
+        }
+        closedir(d);
+    }
+
+    if(!isEmptyList(ldir)){
+        for(tPosL pos = first(ldir); pos != NULL; pos = next(pos,ldir)){
+            char directorio1[MAX];
+            getElement(pos,directorio1,ldir);
+            recA(directorio1,hid);
+        }
+    }
+    deleteList(&ldir);
+}
+
+
+
+
+// Función recursiva auxiliar recB
+void recB(char * directorio, bool hid){
+    DIR *d;
+    struct dirent *fic;
+
+    d = opendir(directorio);
+    if (d) {
+        while ((fic = readdir(d)) != NULL){
+            // Concatenamos las rutas para que siempre sean relativas
+            // al directorio actual
+            char destino[MAX];
+            strcpy(destino,directorio);
+            strcat(destino,"/");
+            strcat(destino,fic->d_name);
+
+            struct stat e;
+            // Guardamos en la listas los directorios (distintos de . y ..)
+            if(lstat(destino, &e) == -1) perror("list error");
+            else{
+                if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
+                && strcmp(fic->d_name,"..") != 0){
+                    if(fic->d_name[0] != '.' || hid) recB(destino,hid);
+                }
+            }
+        }
+        closedir(d);
+    }
+    printf("*********  %s\n",directorio);
+    d = opendir(directorio);
+    // No hace falta comprobar si d se inicializó porque ya está de antes
+    // comprobado
+    while ((fic = readdir(d)) != NULL){
+        if(hid || fic->d_name[0] != '.'){
+            // Usar una dirección relativa a la carpeta actual
+            char reldir[MAX];
+            strcpy(reldir,directorio);
+            strcat(reldir,"/");
+            strcat(reldir,fic->d_name);
+            struct stat e;
+            if(lstat(reldir, &e) == -1) perror("");
+            else printf("%10ld  %s\n",e.st_size,fic->d_name);
+        }  
+    }
+    closedir(d);
 }
 
 
 void listAux(char * directorio, bool reca, bool recb, bool hid){
-    // Si no hay recursividad
-    if(!reca && !recb){ // Si el list no es recursivo
+    
+    if(reca) recA(directorio,hid);
+    else if(recb) recB(directorio,hid); 
+    else{ // Si no hay recursividad
+
         char destino[MAX];
         struct stat e;
         DIR *d;
@@ -166,102 +265,18 @@ void listAux(char * directorio, bool reca, bool recb, bool hid){
         printf("*********  %s\n",directorio);
         d = opendir(directorio);
         if (d) {
-            while ((fic = readdir(d)) != NULL) {
+            while ((fic = readdir(d)) != NULL){
                 if(hid || fic->d_name[0] != '.'){
+                    // Concatenamos la ruta por si queremos listar un directorio distinto al actual
                     strcpy(destino,directorio);
                     strcat(destino,"/");
                     strcat(destino,fic->d_name);
+
                     if(lstat(destino, &e) == -1) perror("");
                     else printf("%10ld  %s\n",e.st_size,fic->d_name);
                 }
             }   
             closedir(d);
-        }
-    }else{
-
-        // reca
-
-        if(reca){ // Recursividad hacia abajo
-            printf("*********  %s\n",directorio);
-            DIR *d;
-            struct dirent *fic;
-            tList ldir;
-
-            // Lista para guardar directorios
-            CreateList(&ldir);
-
-            d = opendir(directorio);
-            if (d) {
-                while ((fic = readdir(d)) != NULL){
-                    // Encadenamos el directorio a la dirección actual para
-                    // que el ordenador pueda acceder a carpetas con una profundidad
-                    // mayor a 1
-                    char destino[MAX];
-                    strcpy(destino,directorio);
-                    strcat(destino,"/");
-                    strcat(destino,fic->d_name);
-                    struct stat e;
-                    // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(lstat(destino, &e) == -1) perror("list error");
-                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
-                    && strcmp(fic->d_name,"..") != 0){
-                        if(fic->d_name[0] != '.' || hid) InsertElement(destino,ldir);
-                    } 
-                    if(hid || fic->d_name[0] != '.'){
-                        printf("%10ld  %s\n",e.st_size,fic->d_name);
-                    } 
-                }
-                closedir(d);
-            }
-            if(!isEmptyList(ldir)){
-                for(tPosL pos = first(ldir); pos != NULL; pos = next(pos,ldir)){
-                    char directorio1[MAX];
-                    getElement(pos,directorio1,ldir);
-                    listAux(directorio1,reca,recb,hid);
-                }
-            }
-            deleteList(&ldir);
-
-        // recb
-
-        }else{ 
-            DIR *d;
-            struct dirent *fic;
-
-            d = opendir(directorio);
-            if (d) {
-                while ((fic = readdir(d)) != NULL){
-                    char destino[MAX];
-                    strcpy(destino,directorio);
-                    strcat(destino,"/");
-                    strcat(destino,fic->d_name);
-                    struct stat e;
-                    // Guardamos en la listas los directorios (distintos de . y ..)
-                    if(lstat(destino, &e) == -1) perror("list error");
-                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
-                    && strcmp(fic->d_name,"..") != 0){
-                        if(fic->d_name[0] != '.' || hid) listAux(destino,reca,recb,hid);
-                    }
-                }
-                closedir(d);
-            }
-            printf("*********  %s\n",directorio);
-            d = opendir(directorio);
-            // No hace falta comprobar si d se inicializó porque ya está de antes
-            // comprobado
-            while ((fic = readdir(d)) != NULL){
-                    if(hid || fic->d_name[0] != '.'){
-                        // Usar una dirección relativa a la carpeta actual
-                        char reldir[MAX];
-                        strcpy(reldir,directorio);
-                        strcat(reldir,"/");
-                        strcat(reldir,fic->d_name);
-                        struct stat e;
-                        if(lstat(reldir, &e) == -1) perror("");
-                        else printf("%10ld  %s\n",e.st_size,fic->d_name);
-                    }  
-                }
-                closedir(d);   
         }
     }
 }
@@ -270,7 +285,7 @@ void list(char * trozos[], int ntrozos){
     if(ntrozos < 2) directorio();
     else{
         bool reca = false, recb = false, hid = false;
-        int control = 0;
+        int control = 0; // Contador de cuantos trozos son opciones del comando
 
         for(int i = 1; i < ntrozos; i++){
             if(strcmp(trozos[i],"-reca") == 0){
@@ -291,6 +306,5 @@ void list(char * trozos[], int ntrozos){
             listAux(trozos[i],reca,recb,hid);
         }
         if(control + 1 == ntrozos) directorio();
-    }
-    
+    }   
 }
