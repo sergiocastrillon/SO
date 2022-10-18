@@ -1,7 +1,7 @@
 #include "lista.h"
 
 bool isEmptyList(tList list){
-    return strcmp(list->data,"\0") == 0;
+    return list->sig == NULL;
 }
 
 void CreateList(tList* list){
@@ -13,55 +13,45 @@ void CreateList(tList* list){
 }
 
 bool InsertElement (char item[], tList list){
-    //tPosL temp;
-    //temp = malloc(sizeof(struct tNode));
-    if(isEmptyList(list)==true) { // Caso 1: El elemento es el primero de la lista
-        // Modificar isEmptyList por la condición que me permita saber si la lista está vacía
-        strcpy(list->data,item);
-        //*L = temp;
-    }else{
-        // Caso 2: El elemento no es el primero
-        tPosL lastPos;
-        lastPos = last(list);
-        lastPos -> sig = calloc(1,sizeof(struct tNode));
-        lastPos = lastPos->sig;
-        strcpy(lastPos->data,item);
-        lastPos->sig = NULL;
-
+    
+    tPosL lastPos = list;
+    while(lastPos -> sig != NULL) lastPos = lastPos -> sig;
+    lastPos -> sig = calloc(1,sizeof(struct tNode));
+    lastPos = lastPos->sig;
+    strcpy(lastPos->data,item);
+    lastPos->sig = NULL;
+    return true;
     }
-    return true; // Devuelve true si la ejecución se pudo realizar
-}
+     // Devuelve true si la ejecución se pudo realizar
 
 
 
 // Adaptar a la nueva implementación
 void RemoveElement(tPosL pos, tList list){
-    tPosL temp;
-    if(pos->sig==NULL){ // El elemento a borrar es el último de la lista
-        if(list==pos){ // El elemento a borrar es el único elemento de la lista
-            strcpy(list->data,"\0");
-        }else{ // Si no lo es tenemos que buscar el penúltimo elemento y declarar sig a NULL
-            temp = previous(pos,list);
-            temp->sig = NULL;
-            free(pos); // Borramos la memoria reservada para la posición
-            pos = NULL; // pos ahora apunta a NULL
-        }
-
-    }else{ // Si el elemento a borrar no es el último de la lista
+    tPosL temp = list;
+    // Si el elemento a borrar no es el último de la lista
+    if(pos->sig == NULL){
+        while(temp -> sig != pos) temp = temp -> sig;
+        free(pos);
+        pos = NULL;
+        temp -> sig = NULL;
+    }else{
         temp = pos->sig;
         strcpy(pos->data,temp->data); // Sustituimos la información en el nodo que queremos borrar por la del nodo siguiente
         pos->sig = temp->sig;
         free(temp); // Borramos el nodo siguiente que contiene la misma información que pos
         temp = NULL; // El nodo no apunta a nada ahora
     }
+    
 }
 
 
 // previous
 tPosL previous(tPosL pos, tList list){
     tPosL temp1,temp2;
+    if(list -> sig == pos) return NULL;
     temp1 = list;
-    temp2=NULL;
+    temp2 = NULL;
     while(temp1 != pos){
         temp2=temp1;
         temp1 = temp1->sig;
@@ -80,13 +70,14 @@ tPosL next(tPosL pos, tList list){
 
 // first
 tPosL first(tList list){
-    return list;
+    return list->sig;
 }
 // first
 
 // last
 tPosL last(tList list){
     tPosL temp = list;
+    if(list->sig == NULL) return NULL;
     while(temp->sig != NULL) temp = temp->sig; // Recorremos toda la lista hasta llegar al último nodo
     return temp;
 }

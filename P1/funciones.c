@@ -170,7 +170,7 @@ void hist(char* trozos[],int ntrozos,tList lista){
     // Separamos casos, si el comando va acompañado de alguna opción o no
     if(ntrozos == 1){ // No se introdujo ninguna opción, imprimir historial
         int x = 0;
-        for(tPosL i = lista; i!= NULL; i = next(i,lista)){
+        for(tPosL i = first(lista); i!= NULL; i = next(i,lista)){
             char comando[MAX];
             getElement(i,comando,lista);
             printf("%d -> %s\n",x,comando);
@@ -179,11 +179,11 @@ void hist(char* trozos[],int ntrozos,tList lista){
 
     }else if(strcmp(trozos[1],"-c")==0){ // Borrar la lista
         tPosL pos = first(lista);
-        char elemento[MAX];
-        getElement(pos,elemento,lista);
-        while(pos != NULL && strcmp(elemento,"\0")!=0){
+        tPosL temp;
+        // La lista siempre contiene al menos un elemento no hace falta comprobar si
+        // la lista está vacía
+        while(!isEmptyList(lista)){
             RemoveElement(pos, lista);
-            getElement(pos,elemento,lista);
         }
 
     }else{
@@ -217,7 +217,7 @@ void comando(char* trozos[], int ntrozos, tList lista,char entrada[]){
         // Obtenemos la orden de la lista asignada al número introducido
         long n = strtol(trozos[1],&error,10);
         if(error != trozos[1] && n >= 0){
-            tPosL pos = lista;
+            tPosL pos = first(lista);
             int i = 0;
             while(i<n && pos != NULL){
                 pos = next(pos,lista);
