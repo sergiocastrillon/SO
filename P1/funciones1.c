@@ -341,3 +341,48 @@ void delete(char * trozos[], int ntrozos){
         }
     }
 }
+
+void deleteRecAux(char * directorio){
+    DIR *d;
+    struct dirent *fic;
+    char direccion[MAX];
+    
+
+    d = opendir(directorio);
+    if (d) {
+        while ((fic = readdir(d)) != NULL){
+            strcpy(direccion,directorio);
+            strcat(direccion,"/");
+            strcat(direccion,fic->d_name);
+            struct stat e;
+            if(lstat(direccion, &e) == -1) perror("deltree failed");
+            else{
+                if(S_ISDIR(e.st_mode)){ // Separamos las carpetas de los ficheros
+                    if(rmdir(direccion) == -1){
+                        if(errno == ENOTEMPTY){
+
+                            deleteRecAux(direccion);
+                        } 
+                        else perror("delete failed");
+                    }
+                }
+            }
+        }
+    }        
+    
+}
+
+void deleteRec(char * trozos[], int ntrozos){
+    struct stat e;
+    for(int i = 1; i < ntrozos; i++){
+        if(lstat(trozos[i], &e) == -1) perror("delete failed");
+        else{
+            if(S_ISDIR(e.st_mode)){ // Separamos las carpetas de los ficheros
+                if(rmdir(trozos[i]) == -1){
+                    if(errno == ENOTEMPTY) deleteRecAux(trozos[i]);
+                    else perror("delete failed");
+                }
+            }
+        }
+    }
+}
