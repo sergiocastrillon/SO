@@ -1,9 +1,5 @@
 #include "funciones1.h"
 
-
-
-
-
 char LetraTF (mode_t m){
      switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
         case S_IFSOCK: return 's'; /*socket */
@@ -346,42 +342,65 @@ void deleteRecAux(char * directorio){
     DIR *d;
     struct dirent *fic;
     char direccion[MAX];
-    
 
     d = opendir(directorio);
     if (d) {
         while ((fic = readdir(d)) != NULL){
+            // Direccion en base a la ruta actual
             strcpy(direccion,directorio);
             strcat(direccion,"/");
             strcat(direccion,fic->d_name);
-            struct stat e;
-            if(lstat(direccion, &e) == -1) perror("deltree failed");
-            else{
-                if(S_ISDIR(e.st_mode)){ // Separamos las carpetas de los ficheros
-                    if(rmdir(direccion) == -1){
-                        if(errno == ENOTEMPTY){
 
-                            deleteRecAux(direccion);
-                        } 
-                        else perror("delete failed");
+            // Si estamos en ".." o ".", saltamos una iteracion del bucle
+            if(strcmp(fic->d_name,".") == 0 || strcmp(fic->d_name,"..") == 0) continue;
+            
+            struct stat e;
+            if(lstat(direccion, &e) == -1){
+                // Si no se puede obtener información del
+                // archivo es que nos faltan permisos o tenemos algun fallo, 
+                // detenemos el borrado ya que no podremos terminar de borrar la carpeta original
+                perror("failed removing");
+                break;
+            }else{
+                if(S_ISDIR(e.st_mode)){
+                    // Separamos las carpetas de los ficheros
+                    if(rmdir(direccion) == -1){
+                        deleteRecAux(direccion);
+                        // Si no es capaz de borrar la carpeta tras llamar a deleteRecAux
+                        // es que nos faltan permisos en ese directorio
+                        if(rmdir(direccion) == -1) break;
                     }
-                }
+                }else{
+                    if(unlink(direccion) == -1){
+                        // Si falla entonces posiblemente no tengamos permisos 
+                        //en el directorio asi que podemos salir de la función
+                        // El break evita saltarse el closedir
+                        perror("failed trying to remove a file");
+                        break;
+                    } 
+                } 
             }
         }
-    }        
+        closedir(d);
+    }      
     
 }
 
 void deleteRec(char * trozos[], int ntrozos){
     struct stat e;
     for(int i = 1; i < ntrozos; i++){
-        if(lstat(trozos[i], &e) == -1) perror("delete failed");
+        if(lstat(trozos[i], &e) == -1) perror("deltree failed");
         else{
             if(S_ISDIR(e.st_mode)){ // Separamos las carpetas de los ficheros
                 if(rmdir(trozos[i]) == -1){
-                    if(errno == ENOTEMPTY) deleteRecAux(trozos[i]);
-                    else perror("delete failed");
+                    deleteRecAux(trozos[i]);
+                    // rmdir debería poder borrar ahora, si no puede es que se ha presentado
+                    // algún fallo vaciando el directorio, en cuyo caso el error correspondiente
+                    // ya se habrá mostrado y no hace falta mostrarlo aquí
+                    rmdir(trozos[i]);
                 }
+            }else{
+                if(unlink(trozos[i]) ==-1 ) perror("deltree failed");
             }
         }
     }
