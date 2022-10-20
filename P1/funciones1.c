@@ -220,7 +220,7 @@ void recB(char * directorio, bool hid, bool acc, bool link, bool lng) {
         while ((fic = readdir(d)) != NULL){
             // Concatenamos las rutas para que siempre sean relativas
             // al directorio actual
-            char destino[MAX];
+            char destino[1000];
             strcpy(destino,directorio);
             strcat(destino,"/");
             strcat(destino,fic->d_name);
@@ -231,7 +231,7 @@ void recB(char * directorio, bool hid, bool acc, bool link, bool lng) {
             else{
                 if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                 && strcmp(fic->d_name,"..") != 0){
-                    if(fic->d_name[0] != '.' || hid) recB(destino,hid,acc,link,lng);
+                    if(hid || fic->d_name[0] != '.') recB(destino,hid,acc,link,lng);
                 }
             }
         }
@@ -241,8 +241,8 @@ void recB(char * directorio, bool hid, bool acc, bool link, bool lng) {
         while ((fic = readdir(d)) != NULL){
             if(hid || fic->d_name[0] != '.'){
             // Usar una dirección relativa a la carpeta actual
-                char reldir[MAX];
-                strcpy(reldir,directorio);
+                char reldir[1000];
+                strncpy(reldir,directorio,1000);
                 strcat(reldir,"/");
                 strcat(reldir,fic->d_name);
                 statAux(reldir,fic->d_name,lng,acc,link);
