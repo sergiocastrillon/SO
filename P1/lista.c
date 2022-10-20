@@ -13,10 +13,9 @@ void CreateList(tList* list){
 }
 
 bool InsertElement (char item[], tList list){
-    
     tPosL lastPos = list;
     while(lastPos -> sig != NULL) lastPos = lastPos -> sig;
-    lastPos -> sig = calloc(1,sizeof(struct tNode));
+    lastPos -> sig = malloc(sizeof(struct tNode));
     lastPos = lastPos->sig;
     strcpy(lastPos->data,item);
     lastPos->sig = NULL;

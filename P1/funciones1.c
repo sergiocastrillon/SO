@@ -79,7 +79,7 @@ void statAux(char * fichero, char * nombre, bool lng, bool acc, bool link){
             struct tm timem;
             char timeacc[50];
             char timemod[50];
-            char symlink[50];
+            char symlink[600] = "\0";
 
             struct group *group;
             struct passwd *user;
@@ -100,13 +100,15 @@ void statAux(char * fichero, char * nombre, bool lng, bool acc, bool link){
             else strcpy(time,timemod);
 
             if(link){
-                if(readlink(fichero, symlink, 50) != -1){
-                    strcat(nombre," -> ");
-                    strcat(nombre,symlink);
-                }
-                printf("%s   %2ld (%8ld) %8s %8s %10s %8ld %-1s\n",time,e.st_nlink,e.st_ino,
-                user->pw_name,group->gr_name,permisos,e.st_size,nombre);
-                
+                char ficheroCopia[600];
+                strncpy(ficheroCopia,fichero, strlen(fichero)+1);
+                if(readlink(ficheroCopia, symlink, 50) != -1){
+                    printf("%s   %2ld (%8ld) %8s %8s %10s %8ld %-1s -> %-1s\n",time,e.st_nlink,e.st_ino,
+                    user->pw_name,group->gr_name,permisos,e.st_size,nombre,symlink);
+                }else{
+                    printf("%s   %2ld (%8ld) %8s %8s %10s %8ld %-1s\n",time,e.st_nlink,e.st_ino,user->pw_name,
+                    group->gr_name,permisos,e.st_size,nombre);
+                } 
             }else{
                 printf("%s   %2ld (%8ld) %8s %8s %10s %8ld %-1s\n",time,e.st_nlink,e.st_ino,user->pw_name,
                 group->gr_name,permisos,e.st_size,nombre); // long
@@ -158,7 +160,7 @@ void recA(char * directorio, bool hid, bool acc, bool link, bool lng){
     tList ldir;
 
     // Lista para guardar directorios
-    CreateList(&ldir);
+    //CreateList(&ldir);
 
     d = opendir(directorio);
     if (d) {
@@ -168,17 +170,15 @@ void recA(char * directorio, bool hid, bool acc, bool link, bool lng){
             // Encadenamos el directorio a la dirección actual para
             // que el ordenador pueda acceder a carpetas con una profundidad
             // mayor a 1
-            char destino[MAX];
-            strcpy(destino,directorio);
+            char destino[600];
+            strncpy(destino,directorio,600);
             strcat(destino,"/");
             strcat(destino,fic->d_name);
             struct stat e;
             // Guardamos en la listas los directorios (distintos de . y ..)
-            if(lstat(destino, &e) == -1) perror("list error");
+            if(lstat(destino, &e) == -1) perror("list error1");
             else{
                 if(hid || fic->d_name[0] != '.'){
-                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
-                    && strcmp(fic->d_name,"..") != 0) InsertElement(destino,ldir);
                     statAux(destino, fic->d_name,lng,acc,link);
                 } 
             }
@@ -186,15 +186,25 @@ void recA(char * directorio, bool hid, bool acc, bool link, bool lng){
         }
         closedir(d);
     }
+    d = opendir(directorio);
+    if(d){
+        while ((fic = readdir(d)) != NULL){
 
-    if(!isEmptyList(ldir)){
-        for(tPosL pos = first(ldir); pos != NULL; pos = next(pos,ldir)){
-            char directorio1[MAX];
-            getElement(pos,directorio1,ldir);
-            recA(directorio1,hid,acc,link,lng);
+            
+            char destino[600];
+            strncpy(destino,directorio,600);
+            strcat(destino,"/");
+            strcat(destino,fic->d_name);
+            struct stat e;
+            // Guardamos en la listas los directorios (distintos de . y ..)
+            if(lstat(destino, &e) == -1) perror("list error1");
+            else{
+                if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
+                    && strcmp(fic->d_name,"..") != 0) recA(destino,hid,acc,link,lng);
+            }
         }
     }
-    deleteList(&ldir);
+    closedir(d);
 }
 
 
