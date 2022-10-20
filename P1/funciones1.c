@@ -50,9 +50,9 @@ void create(char * trozos[], int ntrozos){
     if(ntrozos == 1) {
         directorio();
     }
-    // Llamada a carpeta ??
+    // Llamada a carpeta ?? S_IRUSR | S_IWUSR | S_IXUSR
     else{
-        mode_t permisos = S_IRWXU | S_IROTH | S_IRUSR | S_IXGRP | S_IXOTH | S_IRGRP;
+        mode_t permisos = S_IRWXU | S_IROTH | S_IXGRP | S_IXOTH | S_IRGRP;
         if(strcmp(trozos[1],"-f")==0){ // Crear fichero
             if(ntrozos >= 3){
                 if(open(trozos[2], O_CREAT|O_EXCL, permisos) < 0) perror("create failed: ");

@@ -273,7 +273,8 @@ void infosis(){
 // ayuda
 
 void ayuda(char* trozos[], int ntrozos){
-    if (ntrozos == 1) printf( "autores pid carpeta fecha hist comando infosis ayuda fin salir bye\n");
+    if (ntrozos == 1) printf( "autores pid carpeta fecha hist comando infosis ayuda fin salir bye"
+    "create stat list delete deltree\n");
     else{
         if(strcmp(trozos[1],"fin") == 0 || strcmp(trozos[1],"salir") == 0 || strcmp(trozos[1],"bye") == 0)
         printf("%s:\tfinaliza el shell.\n",trozos[1]);
@@ -289,6 +290,16 @@ void ayuda(char* trozos[], int ntrozos){
         else if(strcmp(trozos[1],"infosis")==0) printf("infosis:\t Muestra la información de la máquina que ejecuta el shell\n");
         else if(strcmp(trozos[1],"ayuda")==0)  printf("ayuda [cmd]:\t Imprime un listado de los comandos existentes." 
         " [cmd] muestra informacion a cerca del comando cmd\n");
+        else if(strcmp(trozos[1],"create")==0) printf("create [-f]:\t Crea uno o varios directorios [o archivos] con los nombres dados\n");
+        else if(strcmp(trozos[1],"stat")==0) printf("stat [-long|-acc|-link]: \t Muestra información de uno o varios ficheros (o carpetas)"
+        "\n -long:\t Muestra la información detallada de los ficheros\n-acc:\t Fecha de acceso en vez de mostrar la de modificación\n"
+        "-link:\t Si el o los archivos dados son links simbolicos, muestra a donde apuntan,\nen caso contrario funciona como un -long\n");
+        else if(strcmp(trozos[1],"list")==0) printf("list [-reca|-recb|-hid]:\tLista los ficheros y directorios del directorio dado\n"
+        "-reca:\t Lista los directorios recursivamente hacia abajo\n-recb:\t Lista los directorios al revés\n-hid:\t"
+        "Muestra los ficheros y directorios ocultos (empezados por '.')\nEl funcionamiento del resto de opciones es igual que en stat\n");
+        else if(strcmp(trozos[1],"delete")==0) printf("delete:\tBorra los ficheros o directorios pasados\n");
+        else if(strcmp(trozos[1],"deltree")==0) printf("deltree:\t Borra recursivamente los directorios ('o fichero') dados\n"
+        "Tener cuidado con su uso\n");
         else printf("ayuda: %s no encontrado\n",trozos[1]);
     }
 }
