@@ -72,7 +72,7 @@ void statAux(char * fichero, char * nombre, bool lng, bool acc, bool link){
     if(lng){
         struct stat e; // Struct con las estadisticas
 
-        if(lstat(fichero, &e) == -1) perror("failed accesing file");
+        if(lstat(fichero, &e) == -1) printf("failed accesing file %s: %s",fichero,strerror(errno));
         else{
             // Datos de tiempo (modificación y acceso)
             struct tm timea;
@@ -96,8 +96,8 @@ void statAux(char * fichero, char * nombre, bool lng, bool acc, bool link){
             if((user = getpwuid(e.st_uid)) == NULL) perror(""); // No se si perror funciona aqui
             if((group = getgrgid(e.st_gid)) == NULL) perror("");
             // Si acc mostramos la fecha de acceso si no la fecha de modificación
-            if(acc) strcpy(time,timeacc);
-            else strcpy(time,timemod);
+            if(acc) strncpy(time,timeacc,50);
+            else strncpy(time,timemod,50);
 
             if(link){
                 char ficheroCopia[600];
@@ -116,7 +116,7 @@ void statAux(char * fichero, char * nombre, bool lng, bool acc, bool link){
         } 
     }else{// Información corta de uno o varios archivos
         struct stat e;
-        if(lstat(fichero, &e) == -1) perror("failed accesing file");
+        if(lstat(fichero, &e) == -1) printf("failed accesing file %s: %s",fichero,strerror(errno));
         else printf("%10ld  %s\n",e.st_size,nombre);
     }
 }
@@ -170,18 +170,16 @@ void recA(char * directorio, bool hid, bool acc, bool link, bool lng){
             // Encadenamos el directorio a la dirección actual para
             // que el ordenador pueda acceder a carpetas con una profundidad
             // mayor a 1
-            char destino[600];
+            char destino[1000];
             strncpy(destino,directorio,600);
-            strcat(destino,"/");
-            strcat(destino,fic->d_name);
-            struct stat e;
+            strncat(destino,"/",5);
+            strncat(destino,fic->d_name,395);
             // Guardamos en la listas los directorios (distintos de . y ..)
-            if(lstat(destino, &e) == -1) perror("list error1");
-            else{
-                if(hid || fic->d_name[0] != '.'){
-                    statAux(destino, fic->d_name,lng,acc,link);
-                } 
-            }
+            
+            if(hid || fic->d_name[0] != '.'){
+                statAux(destino, fic->d_name,lng,acc,link);
+            } 
+            
             
         }
         closedir(d);
@@ -191,17 +189,19 @@ void recA(char * directorio, bool hid, bool acc, bool link, bool lng){
         while ((fic = readdir(d)) != NULL){
 
             
-            char destino[600];
+            char destino[1000];
             strncpy(destino,directorio,600);
-            strcat(destino,"/");
-            strcat(destino,fic->d_name);
+            strncat(destino,"/",5);
+            strncat(destino,fic->d_name,395);
             struct stat e;
             // Guardamos en la listas los directorios (distintos de . y ..)
             if(lstat(destino, &e) == -1) perror("list error1");
             else{
-                if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
+                if(hid | fic->d_name[0] != '.'){
+                    if(S_ISDIR(e.st_mode) && strcmp(fic->d_name,".") != 0
                     && strcmp(fic->d_name,"..") != 0) recA(destino,hid,acc,link,lng);
-            }
+                }
+            }  
         }
     }
     closedir(d);
@@ -221,9 +221,9 @@ void recB(char * directorio, bool hid, bool acc, bool link, bool lng) {
             // Concatenamos las rutas para que siempre sean relativas
             // al directorio actual
             char destino[1000];
-            strcpy(destino,directorio);
-            strcat(destino,"/");
-            strcat(destino,fic->d_name);
+            strncpy(destino,directorio,600);
+            strncat(destino,"/",5);
+            strncat(destino,fic->d_name,395);
 
             struct stat e;
             // Llamada recursiva a la función para los subdirectorios
@@ -242,9 +242,9 @@ void recB(char * directorio, bool hid, bool acc, bool link, bool lng) {
             if(hid || fic->d_name[0] != '.'){
             // Usar una dirección relativa a la carpeta actual
                 char reldir[1000];
-                strncpy(reldir,directorio,1000);
-                strcat(reldir,"/");
-                strcat(reldir,fic->d_name);
+                strncpy(reldir,directorio,600);
+                strncat(reldir,"/",5);
+                strncat(reldir,fic->d_name,395);
                 statAux(reldir,fic->d_name,lng,acc,link);
             }  
         }
