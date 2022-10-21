@@ -17,7 +17,7 @@ bool InsertElement (char item[], tList list){
     while(lastPos -> sig != NULL) lastPos = lastPos -> sig;
     lastPos -> sig = malloc(sizeof(struct tNode));
     lastPos = lastPos->sig;
-    strcpy(lastPos->data,item);
+    strncpy(lastPos->data,item,MAX-1);
     lastPos->sig = NULL;
     return true;
     }
