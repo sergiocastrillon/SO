@@ -19,7 +19,7 @@ bool insertItem(tItemM item, tListM list){
     if((lastPos -> sig = malloc(sizeof(struct tNodeM))) == NULL) return false;
     lastPos = lastPos->sig;
     // Asignaciones
-    lastPos -> sig -> data = item;
+    lastPos -> data = item;
     /* strncpy(lastPos->data.type,item.type,10);
     strncpy(lastPos->data.filename,item.filename,64);
     lastPos->data.tam = item.tam;

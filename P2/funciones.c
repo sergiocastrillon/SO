@@ -44,7 +44,7 @@ void leerEntrada(char entrada[],tList lista){
 
 // No hay alguna manera de "implementar" un diccionario en C??
 
-bool procesarEntrada(char entrada[],tList lista){
+bool procesarEntrada(char entrada[],tList lista,tListM listam){
     bool continuar = true;
     char* trozos[50]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
     // Si se introduce un espacio al final del comando el programa peta, relacionado con lo de arriba??
@@ -60,7 +60,7 @@ bool procesarEntrada(char entrada[],tList lista){
         else if(strcmp(trozos[0],"carpeta")==0) carpeta(trozos,ntrozos);
         else if(strcmp(trozos[0],"fecha")==0) fecha(trozos,ntrozos);
         else if(strcmp(trozos[0],"hist")==0) hist(trozos,ntrozos,lista);
-        else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista,copia);
+        else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista,copia,listam);
         else if(strcmp(trozos[0],"infosis")==0) infosis();
         else if(strcmp(trozos[0],"ayuda")==0) ayuda(trozos,ntrozos);
         else if(strcmp(trozos[0],"create")==0) create(trozos,ntrozos);
@@ -68,6 +68,7 @@ bool procesarEntrada(char entrada[],tList lista){
         else if(strcmp(trozos[0],"list")==0) list(trozos,ntrozos);
         else if(strcmp(trozos[0],"delete")==0) delete(trozos,ntrozos);
         else if(strcmp(trozos[0],"deltree")==0) deleteRec(trozos,ntrozos);
+        else if(strcmp(trozos[0],"allocate")==0) allocate(trozos,ntrozos,listam);
         else printf("Comando no reconocido\n");
         // Estructura if else?? Funciona aparentemente
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
@@ -209,7 +210,7 @@ void hist(char* trozos[],int ntrozos,tList lista){
 
 // comando
 
-void comando(char* trozos[], int ntrozos, tList lista,char entrada[]){
+void comando(char* trozos[], int ntrozos, tList lista,char entrada[],tListM listam){
     char* error;
     bool ejecucion = true;
     char comandoHist[MAX];
@@ -246,7 +247,7 @@ void comando(char* trozos[], int ntrozos, tList lista,char entrada[]){
 
     if(ejecucion){
         printf("Ejecutando orden del hist (%s): %s\n",trozos[1],comandoHist);
-        procesarEntrada(comandoHist,lista);
+        procesarEntrada(comandoHist,lista,listam);
     }
 }
 

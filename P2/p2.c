@@ -15,7 +15,7 @@ int main() {
         char entrada[MAX];
         leerEntrada(entrada,lista);
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
-        continuar = procesarEntrada(entrada,lista);
+        continuar = procesarEntrada(entrada,lista,listaMem);
     }
     deleteList(&lista);
     return 0;

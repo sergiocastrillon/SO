@@ -10,7 +10,6 @@
 #include <dirent.h>
 #include <errno.h>
 
-#include "listam.h"
 #include "lista.h"
 
 
@@ -27,5 +26,4 @@ void list(char * trozos[], int ntrozos);
 void delete(char * trozos[], int ntrozos);
 void deleteRecAux(char * directorio);
 void deleteRec(char * trozos[], int ntrozos);
-//
-void allocate(char * trozos[], int ntrozos, tListM listaM);
+

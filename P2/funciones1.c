@@ -415,36 +415,3 @@ void deleteRec(char * trozos[], int ntrozos){
         }
     }
 }
-
-
-
-
-
-
-
-// Practica 2
-
-
-
-void allocate(char * trozos[], int ntrozos, tListM list){
-    // Sin parámetros o sin opción imprime lista de memoria reservada
-    if(ntrozos <= 2) printf("Llamada a lista de memoria\n");
-    else{
-        if(strcmp(trozos[1],"-malloc")==0){
-            // Llamada a malloc con la memoria a reservar
-            tItemM allo;
-            int tam = atoi(trozos[2]);
-            void * direccion;
-            if((direccion = malloc(tam)) == NULL) perror("No se pudo reservar memoria: ");
-            // Guardamos la información en la lista
-            allo.time = time(NULL);
-            strcpy(allo.type, "malloc");
-            allo.tam = tam;
-            allo.direction = direccion;
-            // Parametros no usados a "null" para detectar posibles fallos
-            allo.key = -1;
-            strcpy(allo.filename,"\0");
-            insertItem(allo,list);
-        }
-    }
-}
