@@ -147,6 +147,18 @@ ssize_t LeerFichero (char *f, void *p, size_t cont)
    return n;
 }
 
+//
+void * cadtop(char direction[]){
+   unsigned long hexadecimal;
+   void * p;
+   sscanf(direction, "%lx", &hexadecimal);
+   p = (void *) (uintptr_t) hexadecimal;
+   return p;
+}
+//
+
+
+
 void do_I_O_read (char *ar[])
 {
    void *p;
@@ -156,7 +168,7 @@ void do_I_O_read (char *ar[])
 	printf ("faltan parametros\n");
 	return;
    }
-   // p=cadtop(ar[1]);  /*convertimos de cadena a puntero, crear la función*/
+   p=cadtop(ar[1]);  /*convertimos de cadena a puntero*/
    if (ar[2]!=NULL)
 	cont=(size_t) atoll(ar[2]);
 
@@ -232,27 +244,44 @@ void Do_pmap (void) /*sin argumentos*/
 
 
 
+
+
 void allocate(char * trozos[], int ntrozos, tListM list){
     // Sin parámetros o sin opción imprime lista de memoria reservada
-    if(ntrozos <= 2) printf("Llamada a lista de memoria\n");
-    else{
-        if(strcmp(trozos[1],"-malloc")==0){
-            // Llamada a malloc con la memoria a reservar
-            tItemM allo;
-            int tam = atoi(trozos[2]);
-            void * direccion;
-            if((direccion = malloc(tam)) == NULL) perror("No se pudo reservar memoria: ");
-            // Guardamos la información en la lista
-            allo.time = time(NULL);
-            strcpy(allo.type, "malloc");
-            allo.tam = tam;
-            allo.direction = direccion;
-            // Parametros no usados a "null" para detectar posibles fallos
-            allo.key = -1;
-            strcpy(allo.filename,"\0");
-            if(!insertItem(allo,list)) printf("No se pudo guardar la reserva en la lista\n");
+   if(ntrozos < 2){
+      printf("Llamada a lista de memoria\n");
+      return;
+   } 
+      // malloc
+   if(strcmp(trozos[1],"-malloc")==0){
+      if(ntrozos == 2){
+         printf("Llamada a lista de malloc\n");
+         return;
+      } 
+      // Llamada a malloc con la memoria a reservar
+      tItemM allo;
+      int tam = atoi(trozos[2]);
+      if(tam <= 0){
+         printf("No se reservan bloques de 0 bytes\n");
+         return;
+      } 
+      void * direccion;
+      if((direccion = malloc(tam)) == NULL) perror("No se pudo reservar memoria: ");
+      // Guardamos la información en la lista
+      allo.time = time(NULL);
+      strcpy(allo.type, "malloc");
+      allo.tam = tam;
+      allo.direction = direccion;
+      // Parametros no usados a "null" para detectar posibles fallos
+      allo.key = -1;
+      strcpy(allo.filename,"\0");
+      if(!insertItem(allo,list)) printf("No se pudo guardar la reserva en la lista\n");
 
-            printf("Asignados %d bytes en %p\n", tam,direccion);
-        }
-    }
+      printf("Asignados %d bytes en %p\n", tam,direccion);
+      return;
+   }
+
+   if(strcmp(trozos[1],"-shared"))
+
+
 }
