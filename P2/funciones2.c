@@ -44,8 +44,7 @@ void * ObtenerMemoriaShmget (key_t clave, size_t tam)
  /* Guardar en la lista   InsertarNodoShared (&L, p, s.shm_segsz, clave); */
     return (p);
 }
-void do_AllocateCreateshared (char *tr[])
-{
+void do_AllocateCreateshared (char *tr[],tListM list){
    key_t cl;
    size_t tam;
    void *p;
@@ -62,8 +61,8 @@ void do_AllocateCreateshared (char *tr[])
 	printf ("No se asignan bloques de 0 bytes\n");
 	return;
    }
-   if ((p=ObtenerMemoriaShmget(cl,tam))!=NULL)
-		printf ("Asignados %lu bytes en %p\n",(unsigned long) tam, p);
+   if ((p=ObtenerMemoriaShmget(cl,tam))!=NULL) // Acordarse de borrar Clave
+		printf ("Asignados %lu bytes en %p\n Clave %lu",(unsigned long) tam, p,(unsigned long) cl);
    else
 		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
 }
@@ -200,7 +199,7 @@ ssize_t EscribirFichero (char *f, void *p, size_t cont,int overwrite)
 }
 
 
-
+// Esto no sería para la siguiente practica ??
 void Do_pmap (void) /*sin argumentos*/
  { pid_t pid;       /*hace el pmap (o equivalente) del proceso actual*/
    char elpid[32];
@@ -281,7 +280,26 @@ void allocate(char * trozos[], int ntrozos, tListM list){
       return;
    }
 
-   if(strcmp(trozos[1],"-shared"))
+   if(strcmp(trozos[1],"-createshared")==0){
+      char* datos[2];
+      strcpy(datos[0],trozos[2]);
+      strcpy(datos[1],trozos[3]);
+      do_AllocateCreateshared(datos,list);
+   }
+
+   if(strcmp(trozos[1],"-shared")==0){
+      key_t cl;
+      size_t tam;
+      void *p;
+      cl=(key_t)  strtoul(trozos[2],NULL,10);
+      tam=(size_t) 0;
+      if((p=ObtenerMemoriaShmget(cl,tam))!=NULL) // Acordarse de borrar Clave
+		printf ("Memoria compartida de clave %d en %p\n",(unsigned long) cl, p);
+      else
+		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
+      //ObtenerMemoriaShmget (cl,tam);
+      
+   }
 
 
 }
