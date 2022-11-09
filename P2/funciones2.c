@@ -148,10 +148,8 @@ ssize_t LeerFichero (char *f, void *p, size_t cont)
 
 //
 void * cadtop(char direction[]){
-   unsigned long hexadecimal;
    void * p;
-   sscanf(direction, "%lx", &hexadecimal);
-   p = (void *) (uintptr_t) hexadecimal;
+   sscanf(direction, "%p", &p);
    return p;
 }
 //
@@ -241,7 +239,15 @@ void Do_pmap (void) /*sin argumentos*/
 
 // Practica 2
 
+void memfill(char * trozos[], int ntrozos){ // comprobar que funciona
+   size_t tam;
+   if(ntrozos < 2) return;
+   void * p = cadtop(trozos[1]);
+   if(ntrozos < 3) tam=(size_t) 128;
+   else tam=(size_t) strtoul(trozos[2],NULL,10);
+   LlenarMemoria(p,tam,69);
 
+}
 
 
 
