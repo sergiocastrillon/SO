@@ -69,6 +69,7 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
         else if(strcmp(trozos[0],"delete")==0) delete(trozos,ntrozos);
         else if(strcmp(trozos[0],"deltree")==0) deleteRec(trozos,ntrozos);
         else if(strcmp(trozos[0],"allocate")==0) allocate(trozos,ntrozos,listam);
+        else if(strcmp(trozos[0],"memfill")==0) allocate(trozos,ntrozos,listam);
         else printf("Comando no reconocido\n");
         // Estructura if else?? Funciona aparentemente
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)

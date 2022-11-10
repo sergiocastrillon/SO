@@ -1,5 +1,38 @@
 #include "funciones2.h"
 
+// Funciones de lista
+void printCabeceraList(int rev){
+   pid_t nprocess;
+   nprocess = getpid();
+   if(rev == 0) // general
+   printf("******Lista de bloques asignados para el proceso %d\n",nprocess);
+   if(rev == 1) // malloc
+   printf("******Lista de bloques asignados malloc para el proceso %d\n",nprocess);
+   if(rev == 2) // shared
+   printf("******Lista de bloques asignados shared para el proceso %d\n",nprocess);
+}
+
+void printList(int rev,tListM list){
+   char time[40];
+   tItemM alloc;
+   tPosM pos = firstM(list);
+
+   while(pos != NULL){
+      alloc = pos->data;
+      strftime(time, sizeof(time), "%b %d  %H:%M", localtime(&alloc.time));
+      if(strcmp(alloc.type,"malloc") == 0 && (rev == 0 || rev == 1)){
+         printf("%p\t %8d %s\n",alloc.direction,alloc.tam,time);
+      }
+
+      if(strcmp(alloc.type,"shared") == 0 && (rev == 0 || rev == 2)){
+         printf("%p\t %8d %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
+      }
+      pos = nextM(pos,list);
+   }
+}
+//
+
+
 void Recursiva (int n)
 {
   char automatico[TAMANO];
@@ -21,7 +54,7 @@ void LlenarMemoria (void *p, size_t cont, unsigned char byte)
 		arr[i]=byte;
 }
 
-void * ObtenerMemoriaShmget (key_t clave, size_t tam)
+void * ObtenerMemoriaShmget (key_t clave, size_t tam,tListM list)
 {
     void * p;
     int aux,id,flags=0777;
@@ -41,6 +74,16 @@ void * ObtenerMemoriaShmget (key_t clave, size_t tam)
         return (NULL);
     }
     shmctl (id,IPC_STAT,&s);
+////// Guardar reserva en lista
+   tItemM alloc;
+   alloc.time = time(NULL);
+   strcpy(alloc.type, "shared");
+   alloc.tam = s.shm_segsz;
+   alloc.direction = p;
+   alloc.key = clave;
+   strcpy(alloc.filename,"\0");
+   insertItem(alloc,list);
+//////
  /* Guardar en la lista   InsertarNodoShared (&L, p, s.shm_segsz, clave); */
     return (p);
 }
@@ -61,8 +104,8 @@ void do_AllocateCreateshared (char *tr[],tListM list){
 	printf ("No se asignan bloques de 0 bytes\n");
 	return;
    }
-   if ((p=ObtenerMemoriaShmget(cl,tam))!=NULL) // Acordarse de borrar Clave
-		printf ("Asignados %lu bytes en %p\n Clave %lu",(unsigned long) tam, p,(unsigned long) cl);
+   if ((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL)
+		printf ("Asignados %lu bytes en %p\n",(unsigned long) tam, p);
    else
 		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
 }
@@ -245,6 +288,7 @@ void memfill(char * trozos[], int ntrozos){ // comprobar que funciona
    void * p = cadtop(trozos[1]);
    if(ntrozos < 3) tam=(size_t) 128;
    else tam=(size_t) strtoul(trozos[2],NULL,10);
+
    LlenarMemoria(p,tam,69);
 
 }
@@ -254,7 +298,8 @@ void memfill(char * trozos[], int ntrozos){ // comprobar que funciona
 void allocate(char * trozos[], int ntrozos, tListM list){
     // Sin parámetros o sin opción imprime lista de memoria reservada
    if(ntrozos < 2){
-      printf("Llamada a lista de memoria\n");
+      printCabeceraList(0);
+      printList(0,list);
       return;
    } 
       // malloc
@@ -287,9 +332,11 @@ void allocate(char * trozos[], int ntrozos, tListM list){
    }
 
    if(strcmp(trozos[1],"-createshared")==0){
-      char* datos[2];
-      strcpy(datos[0],trozos[2]);
-      strcpy(datos[1],trozos[3]);
+      char* datos[10];
+      datos[0] = trozos[2];
+      datos[1] = trozos[3];
+      //strncpy(datos[0],trozos[2],10);
+      //strncpy(datos[1],trozos[3],10);
       do_AllocateCreateshared(datos,list);
    }
 
@@ -299,8 +346,8 @@ void allocate(char * trozos[], int ntrozos, tListM list){
       void *p;
       cl=(key_t)  strtoul(trozos[2],NULL,10);
       tam=(size_t) 0;
-      if((p=ObtenerMemoriaShmget(cl,tam))!=NULL) // Acordarse de borrar Clave
-		printf ("Memoria compartida de clave %d en %p\n",(unsigned long) cl, p);
+      if((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL) // Acordarse de borrar Clave
+		printf ("Memoria compartida de clave %ld en %p\n",(unsigned long) cl, p);
       else
 		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
       //ObtenerMemoriaShmget (cl,tam);
@@ -308,4 +355,20 @@ void allocate(char * trozos[], int ntrozos, tListM list){
    }
 
 
+
+   void deallocate(char * trozos[], int ntrozos, tListM list){
+      if(ntrozos < 2){
+      printf("Llamada a lista de memoria\n");
+      return;
+   } 
+      // malloc
+   if(strcmp(trozos[1],"-malloc")==0){
+      if(ntrozos == 2){
+         printf("Llamada a lista de malloc\n");
+         return;
+      }else{
+
+      }
+   }
+   }
 }
