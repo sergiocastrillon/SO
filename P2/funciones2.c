@@ -45,13 +45,11 @@ void Recursiva (int n)
 }
 
 
-void LlenarMemoria (void *p, size_t cont, unsigned char byte)
-{
+void LlenarMemoria (void *p, size_t cont, unsigned char byte){
   unsigned char *arr=(unsigned char *) p;
   size_t i;
 
-  for (i=0; i<cont;i++)
-		arr[i]=byte;
+  for (i=0; i<cont;i++) arr[i]=byte;
 }
 
 void * ObtenerMemoriaShmget (key_t clave, size_t tam,tListM list)
@@ -277,20 +275,61 @@ void Do_pmap (void) /*sin argumentos*/
 
 
 
-
-
-
 // Practica 2
 
 void memfill(char * trozos[], int ntrozos){ // comprobar que funciona
    size_t tam;
+   unsigned char a;
+   void * e;
+
    if(ntrozos < 2) return;
    void * p = cadtop(trozos[1]);
    if(ntrozos < 3) tam=(size_t) 128;
    else tam=(size_t) strtoul(trozos[2],NULL,10);
 
-   LlenarMemoria(p,tam,69);
+   // Obtención del caracter
+   if(ntrozos < 4) a = 69;
+   else{
+      if(strlen(trozos[3])==3){ // si longitud 3 es posible que nos hayan pasado un caracter
+         e = strchr(trozos[3],39); // si detectamos ' entonces miramos con strrchr si
+         if(e != NULL && e != strrchr(trozos[3],39)) a = trozos[3][1]; // hay otro ' de cierre
+         else a = atoi(trozos[3]); // Si no lo hay 
+      }else a = atoi(trozos[3]);
+   }
+   printf("Llenando %ld bytes de memoria con el byte %c(%x) a partir de la direccion %p\n",tam,a,a,p);
+   LlenarMemoria(p,tam,a);
+}
 
+
+void memdump(char * trozos[], int ntrozos){
+   int cont;
+   void *p;
+
+
+   if (ntrozos < 2) return;
+
+   if(ntrozos < 3) cont = 25;
+   else cont = atoi(trozos[2]);
+
+   // obtenemos la direccion de trozos[1] y hacemos que p apunte a ella
+   // para ello pasamos &p y le hacemos un cast a void ** que es lo que pide sscanf
+   sscanf(trozos[1], "%p", (void**)&p);
+   char * mem = p;
+
+
+   for(int i = 0; i < cont; i += 25){ // 25 son los caracteres imprimidos por linea
+      for(int j = i; j < 25 + i; j++){ // j empieza donde se quedó i
+         // caracteres no imprimibles
+         if(mem[j] > 32  && mem[j] < 170) printf("%3c ", mem[j]);
+      }
+      printf("\n");
+      for (int j = i; j < 25 + i; j++){
+         printf("%3x ", mem[j]);
+         //printf("   ");
+      }
+      printf("\n");
+   }
+   printf("\n\n");
 }
 
 

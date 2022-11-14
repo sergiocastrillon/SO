@@ -18,6 +18,7 @@ int main() {
         continuar = procesarEntrada(entrada,lista,listaMem);
     }
     deleteList(&lista);
+    deleteListM(&listaMem);
     return 0;
 }
 
