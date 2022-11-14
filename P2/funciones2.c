@@ -1,31 +1,37 @@
 #include "funciones2.h"
 
-// Funciones de lista
-void printCabeceraList(int rev){
-   pid_t nprocess;
-   nprocess = getpid();
-   if(rev == 0) // general
-   printf("******Lista de bloques asignados para el proceso %d\n",nprocess);
-   if(rev == 1) // malloc
-   printf("******Lista de bloques asignados malloc para el proceso %d\n",nprocess);
-   if(rev == 2) // shared
-   printf("******Lista de bloques asignados shared para el proceso %d\n",nprocess);
-}
 
+// Imprime la lista (0 imprime todo, 1 malloc, 2 shared, 3 map)
 void printList(int rev,tListM list){
    char time[40];
    tItemM alloc;
+
+   pid_t nprocess;
+   nprocess = getpid();
+   
+
+   if(rev == 0) // general
+   printf("******Lista de bloques asignados para el proceso %d\n",nprocess);
+
+   if(rev == 1) // malloc
+   printf("******Lista de bloques asignados malloc para el proceso %d\n",nprocess);
+
+   if(rev == 2) // shared
+   printf("******Lista de bloques asignados shared para el proceso %d\n",nprocess);
+
    tPosM pos = firstM(list);
 
    while(pos != NULL){
+
       alloc = pos->data;
       strftime(time, sizeof(time), "%b %d  %H:%M", localtime(&alloc.time));
+
       if(strcmp(alloc.type,"malloc") == 0 && (rev == 0 || rev == 1)){
-         printf("%p\t %8d %s\n",alloc.direction,alloc.tam,time);
+         printf("%p\t %8ld %s malloc\n",alloc.direction,alloc.tam,time);
       }
 
       if(strcmp(alloc.type,"shared") == 0 && (rev == 0 || rev == 2)){
-         printf("%p\t %8d %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
+         printf("%p\t %8ld %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
       }
       pos = nextM(pos,list);
    }
@@ -52,6 +58,8 @@ void LlenarMemoria (void *p, size_t cont, unsigned char byte){
   for (i=0; i<cont;i++) arr[i]=byte;
 }
 
+
+
 void * ObtenerMemoriaShmget (key_t clave, size_t tam,tListM list)
 {
     void * p;
@@ -73,26 +81,20 @@ void * ObtenerMemoriaShmget (key_t clave, size_t tam,tListM list)
     }
     shmctl (id,IPC_STAT,&s);
 ////// Guardar reserva en lista
-   tItemM alloc;
-   alloc.time = time(NULL);
-   strcpy(alloc.type, "shared");
-   alloc.tam = s.shm_segsz;
-   alloc.direction = p;
-   alloc.key = clave;
-   strcpy(alloc.filename,"\0");
-   insertItem(alloc,list);
+   insertShared(p,s.shm_segsz,clave,list);
 //////
- /* Guardar en la lista   InsertarNodoShared (&L, p, s.shm_segsz, clave); */
     return (p);
 }
+
+
+
 void do_AllocateCreateshared (char *tr[],tListM list){
    key_t cl;
    size_t tam;
    void *p;
 
    if (tr[0]==NULL || tr[1]==NULL) {
-      printf("Sin implementar printlistshared\n");
-		//ImprimirListaShared(&L); // Implementar en la lista y pasar la lista como parámetro de la función
+      printList(2,list);
 		return;
    }
   
@@ -109,23 +111,26 @@ void do_AllocateCreateshared (char *tr[],tListM list){
 }
 
 
-void * MapearFichero (char * fichero, int protection)
-{
-    int df, map=MAP_PRIVATE,modo=O_RDONLY;
-    struct stat s;
-    void *p;
 
-    if (protection&PROT_WRITE)
-          modo=O_RDWR;
-    if (stat(fichero,&s)==-1 || (df=open(fichero, modo))==-1)
-          return NULL;
-    if ((p=mmap (NULL,s.st_size, protection,map,df,0))==MAP_FAILED)
-           return NULL;
-/* Guardar en la lista    InsertarNodoMmap (&L,p, s.st_size,df,fichero); */
-    return p;
+void * MapearFichero (char * fichero, int protection,tListM list){
+   
+   int df, map=MAP_PRIVATE,modo=O_RDONLY;
+   struct stat s;
+   void *p;
+
+   if (protection&PROT_WRITE)
+      modo=O_RDWR;
+   if (stat(fichero,&s)==-1 || (df=open(fichero, modo))==-1)
+      return NULL;
+   if ((p=mmap (NULL,s.st_size, protection,map,df,0))==MAP_FAILED)
+      return NULL;
+
+   insertMap(p,s.st_size,fichero,df,list);
+   //insertItem(&L,p, s.st_size,df,fichero);
+   return p;
 }
 
-void do_AllocateMmap(char *arg[])
+void do_AllocateMmap(char *arg[],tListM list)
 { 
      char *perm;
      void *p;
@@ -141,7 +146,7 @@ void do_AllocateMmap(char *arg[])
             if (strchr(perm,'w')!=NULL) protection|=PROT_WRITE;
             if (strchr(perm,'x')!=NULL) protection|=PROT_EXEC;
      }
-     if ((p=MapearFichero(arg[0],protection))==NULL)
+     if ((p=MapearFichero(arg[0],protection,list))==NULL)
              perror ("Imposible mapear fichero");
      else
              printf ("fichero %s mapeado en %p\n", arg[0], p);
@@ -320,12 +325,37 @@ void memdump(char * trozos[], int ntrozos){
    for(int i = 0; i < cont; i += 25){ // 25 son los caracteres imprimidos por linea
       for(int j = i; j < 25 + i; j++){ // j empieza donde se quedó i
          // caracteres no imprimibles
-         if(mem[j] > 32  && mem[j] < 170) printf("%3c ", mem[j]);
+         //if(mem[j] >= 32  && mem[j] < 170) 
+         if(mem[j] >= 7 && mem[j] <= 13){  // Bro esto tiene que haber una mejor forma
+            switch (mem[j]) {
+               case '\a':
+                  printf("\\a ");
+                  break;
+               case '\b':
+                  printf("\\b ");
+                  break;
+               case '\t':
+                  printf("\\t ");
+                  break;
+               case '\n':
+                  printf("\\n ");
+                  break;
+               case '\v':
+                  printf("\\v ");
+                  break;
+               case '\f':
+                  printf("\\f ");
+                  break;
+               case '\r':
+                  printf("\\r ");
+                  break;
+            }
+         }else printf("%2c ", mem[j]);
+         
       }
       printf("\n");
       for (int j = i; j < 25 + i; j++){
-         printf("%3x ", mem[j]);
-         //printf("   ");
+         printf("%02x ", mem[j]);
       }
       printf("\n");
    }
@@ -337,41 +367,33 @@ void memdump(char * trozos[], int ntrozos){
 void allocate(char * trozos[], int ntrozos, tListM list){
     // Sin parámetros o sin opción imprime lista de memoria reservada
    if(ntrozos < 2){
-      printCabeceraList(0);
       printList(0,list);
       return;
    } 
       // malloc
    if(strcmp(trozos[1],"-malloc")==0){
       if(ntrozos == 2){
-         printf("Llamada a lista de malloc\n");
+         printList(1,list);
          return;
       } 
       // Llamada a malloc con la memoria a reservar
-      tItemM allo;
-      int tam = atoi(trozos[2]);
+      size_t tam = strtol(trozos[2],NULL,10);
       if(tam <= 0){
          printf("No se reservan bloques de 0 bytes\n");
          return;
       } 
       void * direccion;
       if((direccion = malloc(tam)) == NULL) perror("No se pudo reservar memoria: ");
-      // Guardamos la información en la lista
-      allo.time = time(NULL);
-      strcpy(allo.type, "malloc");
-      allo.tam = tam;
-      allo.direction = direccion;
-      // Parametros no usados a "null" para detectar posibles fallos
-      allo.key = -1;
-      strcpy(allo.filename,"\0");
-      if(!insertItem(allo,list)) printf("No se pudo guardar la reserva en la lista\n");
 
-      printf("Asignados %d bytes en %p\n", tam,direccion);
+      // Guardamos la información en la lista
+      insertMalloc(direccion,tam,list);
+
+      printf("Asignados %ld bytes en %p\n", tam,direccion);
       return;
    }
 
    if(strcmp(trozos[1],"-createshared")==0){
-      char* datos[10];
+      char* datos[2];
       datos[0] = trozos[2];
       datos[1] = trozos[3];
       //strncpy(datos[0],trozos[2],10);
@@ -383,16 +405,30 @@ void allocate(char * trozos[], int ntrozos, tListM list){
       key_t cl;
       size_t tam;
       void *p;
-      cl=(key_t)  strtoul(trozos[2],NULL,10);
+      if(ntrozos < 3){
+         printList(2,list);
+         return;
+      }
+
+      cl=(key_t) strtoul(trozos[2],NULL,10);
       tam=(size_t) 0;
       if((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL) // Acordarse de borrar Clave
-		printf ("Memoria compartida de clave %ld en %p\n",(unsigned long) cl, p);
+		printf("Memoria compartida de clave %ld en %p\n",(unsigned long) cl, p);
       else
 		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
-      //ObtenerMemoriaShmget (cl,tam);
-      
    }
 
+
+   if(strcmp(trozos[1],"-mmap")==0){
+      // Si el usuario no pasa los permisos, los permisos están todos a 0 con lo cual
+      // intentar acceder a la direccion de alguna manera producira un segfault
+      char* datos[2];
+      datos[0] = trozos[2];
+      datos[1] = trozos[3];
+
+      do_AllocateMmap(datos,list);
+   }
+}
 
 
    void deallocate(char * trozos[], int ntrozos, tListM list){
@@ -409,5 +445,5 @@ void allocate(char * trozos[], int ntrozos, tListM list){
 
       }
    }
-   }
 }
+

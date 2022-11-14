@@ -9,10 +9,11 @@
 
 typedef struct{
     char type[10];	// Se podria hacer con un enumeraod	
-    int tam;			//tamaño reservado en memoria
+    size_t tam;			//tamaño reservado en memoria
     time_t time;
     void * direction;		//dirección de memoria
     char filename[64];		//mmap
+    int descriptor; // descriptor for mmap
     int key;			//clave para shared
 }tItemM;
 
@@ -39,6 +40,10 @@ tPosM lastM(tListM list);
 tItemM getItem(tPosM pos,tListM list); 
 void deleteListM(tListM *list);
 
+
+bool insertMalloc(void * direction, size_t tam,tListM list);
+bool insertShared(void * direction, size_t tam,int key,tListM list);
+bool insertMap(void * direction, size_t tam,char file[],int descriptor,tListM list);
 
 
 #endif

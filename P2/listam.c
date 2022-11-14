@@ -15,18 +15,60 @@ void createListM(tListM* list){
 
 bool insertItem(tItemM item, tListM list){
     tPosM lastPos = list;
+
     while(lastPos -> sig != NULL) lastPos = lastPos -> sig;
     if((lastPos -> sig = malloc(sizeof(struct tNodeM))) == NULL) return false;
+
     lastPos = lastPos->sig;
-    // Asignaciones
     lastPos -> data = item;
-    /* strncpy(lastPos->data.type,item.type,10);
-    strncpy(lastPos->data.filename,item.filename,64);
-    lastPos->data.tam = item.tam;
-    lastPos->data.time = item.time; */
+    
     lastPos->sig = NULL;
     return true;
 }
+
+bool insertMalloc(void * direction, size_t tam,tListM list){
+    tItemM item;
+    item.time = time(NULL);
+    item.tam = tam;
+    strcpy(item.type,"malloc");
+    item.direction = direction;
+
+    strcpy(item.filename,"\0");
+    item.descriptor = -1;
+    item.key = -1;
+
+    return insertItem(item,list);
+}
+
+bool insertShared(void * direction, size_t tam,int key,tListM list){
+    tItemM item;
+    item.time = time(NULL);
+    item.tam = tam;
+    strcpy(item.type,"shared");
+    item.direction = direction;
+    item.key = key;
+
+    strcpy(item.filename,"\0");
+    item.descriptor = -1;
+    
+    return insertItem(item,list);
+}
+
+bool insertMap(void * direction, size_t tam,char file[],int descriptor,tListM list){
+    tItemM item;
+
+    item.time = time(NULL);
+    item.tam = tam;
+    strcpy(item.type,"mmap");
+    item.direction = direction;
+    item.descriptor = descriptor;
+    strcpy(item.filename,file);
+
+    item.key = -1;
+    
+    return insertItem(item,list);
+}
+
 
 
 
