@@ -431,8 +431,8 @@ void allocate(char * trozos[], int ntrozos, tListM list){
 }
 
 
-   void deallocate(char * trozos[], int ntrozos, tListM list){
-      if(ntrozos < 2){
+void deallocate(char * trozos[], int ntrozos, tListM list){
+   if(ntrozos < 2){
       printf("Llamada a lista de memoria\n");
       return;
    } 
@@ -444,6 +444,25 @@ void allocate(char * trozos[], int ntrozos, tListM list){
       }else{
 
       }
+   }
+
+   if(strcmp(trozos[1],"-delkey")==0){
+      /* //shmdt
+      if(shmdt(q->data_m.direction) == -1)
+					perror("Cannot shmdt:");
+				else deletePos_m(listM, q); */
+      char *args[1];
+      args[0] = trozos[2];
+      do_DeallocateDelkey(args);
+   }
+
+   if(strcmp(trozos[1],"-shared")==0){
+      if(ntrozos < 3){
+         printList(2,list);
+         return;
+      } // q->data_m.direction
+      if(shmdt(cadtop(trozos[2])) == -1)
+	      perror("Cannot shmdt:");
    }
 }
 
