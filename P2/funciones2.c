@@ -19,6 +19,9 @@ void printList(int rev,tListM list){
    if(rev == 2) // shared
    printf("******Lista de bloques asignados shared para el proceso %d\n",nprocess);
 
+   if(rev == 3) // shared
+   printf("******Lista de bloques asignados mmap para el proceso %d\n",nprocess);
+
    tPosM pos = firstM(list);
 
    while(pos != NULL){
@@ -32,6 +35,10 @@ void printList(int rev,tListM list){
 
       if(strcmp(alloc.type,"shared") == 0 && (rev == 0 || rev == 2)){
          printf("%p\t %8ld %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
+      }
+
+      if(strcmp(alloc.type,"mmap") == 0 && (rev == 0 || rev == 3)){
+         printf("%p\t %8ld %s %s (descriptor %d)\n",alloc.direction,alloc.tam,time,alloc.filename,alloc.descriptor);
       }
       pos = nextM(pos,list);
    }
@@ -125,8 +132,8 @@ void * MapearFichero (char * fichero, int protection,tListM list){
    if ((p=mmap (NULL,s.st_size, protection,map,df,0))==MAP_FAILED)
       return NULL;
 
+   
    insertMap(p,s.st_size,fichero,df,list);
-   //insertItem(&L,p, s.st_size,df,fichero);
    return p;
 }
 
@@ -137,8 +144,7 @@ void do_AllocateMmap(char *arg[],tListM list)
      int protection=0;
      
      if (arg[0]==NULL){
-     printf("Sin implementar imprimirlista mmap\n");
-     // ImprimirListaMmap(&L); 
+     printList(3,list);
      return;
      }
      if ((perm=arg[1])!=NULL && strlen(perm)<4) {
@@ -243,7 +249,7 @@ ssize_t EscribirFichero (char *f, void *p, size_t cont,int overwrite)
 }
 
 
-// Esto no sería para la siguiente practica ??
+
 void Do_pmap (void) /*sin argumentos*/
  { pid_t pid;       /*hace el pmap (o equivalente) del proceso actual*/
    char elpid[32];
@@ -413,9 +419,9 @@ void allocate(char * trozos[], int ntrozos, tListM list){
       cl=(key_t) strtoul(trozos[2],NULL,10);
       tam=(size_t) 0;
       if((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL) // Acordarse de borrar Clave
-		printf("Memoria compartida de clave %ld en %p\n",(unsigned long) cl, p);
+		printf("Memoria compartida de clave %d en %p\n",cl, p);
       else
-		printf ("Imposible asignar memoria compartida clave %lu:%s\n",(unsigned long) cl,strerror(errno));
+		printf ("Imposible asignar memoria compartida clave %d:%s\n",cl,strerror(errno));
    }
 
 
@@ -431,26 +437,60 @@ void allocate(char * trozos[], int ntrozos, tListM list){
 }
 
 
+void deallocate_aux(tPosM pos,tListM list){
+   tItemM item = pos->data;
+   if(strcmp("malloc",item.type)==0){
+      void * p = item.direction;
+      free(p);
+      printf("deallocate ok");
+      removeItem(pos,list);
+      return;
+   }
+
+
+   if(strcmp("shared",item.type)==0){
+      if(shmdt(item.direction) == -1) perror("Imposible hacer shmdt:");
+      else removeItem(pos,list);
+      return;
+   }
+
+
+   if(strcmp("mmap",item.type)==0){
+      if(munmap(item.direction,item.tam) == -1) perror("Imposible hacer mummap:");
+      else removeItem(pos,list);
+      return;
+   }  
+}
+
+
+
 void deallocate(char * trozos[], int ntrozos, tListM list){
    if(ntrozos < 2){
-      printf("Llamada a lista de memoria\n");
+      printList(0,list);
       return;
    } 
       // malloc
    if(strcmp(trozos[1],"-malloc")==0){
       if(ntrozos == 2){
-         printf("Llamada a lista de malloc\n");
+         printList(1,list);
          return;
-      }else{
-
       }
+      size_t tam = atol(trozos[2]); // Devuelve 0 en caso de fallo, 
+      //como no hay bloques de tam 0 no supone un problema
+      if(tam <= 0){
+         printf("No se asignan bloques de 0 bytes o tamaños negativos\n");
+         return;
+      }
+      tPosM i;
+      if((i = findMallocTam(tam,list))==NULL){
+         printf("No hay bloques asignados con malloc de ese tamaño\n");
+         return;
+      }
+      deallocate_aux(i,list);
+      return;
    }
 
    if(strcmp(trozos[1],"-delkey")==0){
-      /* //shmdt
-      if(shmdt(q->data_m.direction) == -1)
-					perror("Cannot shmdt:");
-				else deletePos_m(listM, q); */
       char *args[1];
       args[0] = trozos[2];
       do_DeallocateDelkey(args);
@@ -460,9 +500,47 @@ void deallocate(char * trozos[], int ntrozos, tListM list){
       if(ntrozos < 3){
          printList(2,list);
          return;
-      } // q->data_m.direction
-      if(shmdt(cadtop(trozos[2])) == -1)
-	      perror("Cannot shmdt:");
+      }
+      key_t key = atoi(trozos[2]);
+      if(key <= 0){
+         printf("No se pueden desasignar claves menores a 1\n");
+         return;
+      }
+      tPosM i;
+      if((i = findSharedKey(key,list)) == NULL){
+         printf("No hay ningún bloque con la clave %d\n",key);
+         return;
+      }
+
+      deallocate_aux(i,list);
+      return;
    }
+
+
+   if(strcmp(trozos[1],"-mmap")==0){
+      if(ntrozos < 3){
+         printList(3,list);
+         return;
+      }
+      tPosM i;
+      if((i = findMappedFile(trozos[2],list)) == NULL){
+         printf("Fichero %s no mapeado\n",trozos[2]);
+         return;
+      }
+      deallocate_aux(i,list);
+      return;
+   }
+
+   
+   // Si no es ninguna de las anteriores entonces entendemos que nos están pasando una direccion
+
+   void * p = cadtop(trozos[1]);
+   tPosM i = findDirection(p,list);
+   if(i == NULL){ 
+      printList(0,list);
+      return;
+   }
+   deallocate_aux(i,list);
+   printf("Hol");
 }
 

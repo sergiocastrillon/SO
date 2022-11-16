@@ -46,4 +46,10 @@ bool insertShared(void * direction, size_t tam,int key,tListM list);
 bool insertMap(void * direction, size_t tam,char file[],int descriptor,tListM list);
 
 
+tPosM findDirection(void * p,tListM list);
+tPosM findMallocTam(size_t tam,tListM list);
+tPosM findSharedKey(key_t key,tListM list);
+tPosM findMappedFile(char* file,tListM list);
+
+
 #endif

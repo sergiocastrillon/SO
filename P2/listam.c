@@ -131,7 +131,7 @@ tPosM lastM(tListM list){
 
 // getItem
 tItemM getItem(tPosM pos,tListM list){
-    return pos->data; // Devolvemos una copia para evitar modificaciones accidentales
+    return pos->data;
 }
 // getItem
 
@@ -147,4 +147,42 @@ void deleteListM(tListM *list){
         i = x;
     }
     *list = NULL;
+}
+
+//findDirection
+tPosM findDirection(void * p,tListM list){
+    tPosM i = firstM(list);
+    while(i!=NULL){
+        if(i->data.direction == p) break;
+        i = nextM(i,list);
+    }
+    return i;
+}
+
+tPosM findMallocTam(size_t tam,tListM list){
+    tPosM i = firstM(list);
+    while(i != NULL){
+        if(strcmp(i->data.type,"malloc") == 0 && i->data.tam == tam) break;
+        i = nextM(i,list);
+    }
+    return i;
+}
+
+tPosM findSharedKey(key_t key,tListM list){
+    tPosM i = firstM(list);
+    while(i != NULL){
+        if(i->data.key == key) break; // como en el resto de allocates se pone la key a -1
+        // no hace falta comprobar que sea de tipo shared ya que es asegurado si es mayor que 0
+        i = nextM(i,list);
+    }
+    return i;
+}
+
+tPosM findMappedFile(char* file,tListM list){
+    tPosM i = firstM(list);
+    while(i != NULL){
+        if(strcmp(i->data.filename,file)==0) break;
+        i = nextM(i,list);
+    }
+    return i;
 }
