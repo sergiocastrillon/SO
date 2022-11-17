@@ -22,7 +22,7 @@ valgrind: # Generación automática de un informe de valgrind
 	# valgrind --show-reachable=yes --leak-check=full --log-file=valgrind-report.txt ./exec
 
 clean: # Borra todos los .o, .txt y el ejecutable del programa
-	rm -f *.o *.txt p2
+	rm -f *.o valgrind-report.txt p2 # *.txt
     # CUIDADO: NO dejar ningún .txt en la misma carpeta, será borrado al ejecutar el make
     # Para evitar esto cambiar el asterico por el nombre del log de valgrind
     # En Linux el editor de textos guarda por defecto en plain text.

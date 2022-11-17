@@ -30,15 +30,15 @@ void printList(int rev,tListM list){
       strftime(time, sizeof(time), "%b %d  %H:%M", localtime(&alloc.time));
 
       if(strcmp(alloc.type,"malloc") == 0 && (rev == 0 || rev == 1)){
-         printf("%p\t %8ld %s malloc\n",alloc.direction,alloc.tam,time);
+         printf("%p\t %12ld %s malloc\n",alloc.direction,alloc.tam,time);
       }
 
       if(strcmp(alloc.type,"shared") == 0 && (rev == 0 || rev == 2)){
-         printf("%p\t %8ld %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
+         printf("%p\t %12ld %s shared (key %d)\n",alloc.direction,alloc.tam,time,alloc.key);
       }
 
       if(strcmp(alloc.type,"mmap") == 0 && (rev == 0 || rev == 3)){
-         printf("%p\t %8ld %s %s (descriptor %d)\n",alloc.direction,alloc.tam,time,alloc.filename,alloc.descriptor);
+         printf("%p\t %12ld %s %s (descriptor %d)\n",alloc.direction,alloc.tam,time,alloc.filename,alloc.descriptor);
       }
       pos = nextM(pos,list);
    }
@@ -299,7 +299,7 @@ void memfill(char * trozos[], int ntrozos){ // comprobar que funciona
    else tam=(size_t) strtoul(trozos[2],NULL,10);
 
    // Obtención del caracter
-   if(ntrozos < 4) a = 69;
+   if(ntrozos < 4) a = 65;
    else{
       if(strlen(trozos[3])==3){ // si longitud 3 es posible que nos hayan pasado un caracter
          e = strchr(trozos[3],39); // si detectamos ' entonces miramos con strrchr si
@@ -329,10 +329,10 @@ void memdump(char * trozos[], int ntrozos){
 
 
    for(int i = 0; i < cont; i += 25){ // 25 son los caracteres imprimidos por linea
-      for(int j = i; j < 25 + i; j++){ // j empieza donde se quedó i
+      for(int j = i; (j < 25 + i) && (j < cont); j++){ // j empieza donde se quedó i
          // caracteres no imprimibles
          //if(mem[j] >= 32  && mem[j] < 170) 
-         if(mem[j] >= 7 && mem[j] <= 13){  // Bro esto tiene que haber una mejor forma
+         if(mem[j] >= 7 && mem[j] <= 13){
             switch (mem[j]) {
                case '\a':
                   printf("\\a ");
@@ -356,15 +356,17 @@ void memdump(char * trozos[], int ntrozos){
                   printf("\\r ");
                   break;
             }
-         }else{
+         }else{ // Tras comprobar que no es un carácter de control miramos si es printeable
             if(isprint(mem[j])) printf("%2c ",mem[j]);
             else printf("   ");
          } 
          
       }
       printf("\n");
-      for (int j = i; j < 25 + i; j++){
-         printf("%02x ", (unsigned char) mem[j]);
+      for (int j = i; (j < 25 + i) && (j < cont); j++){
+         // Si no pasamos a unsigned char estaremos causando overflow
+         // y se imprimirá un hexadecimal negativo
+         printf("%02x ", (unsigned char) mem[j]); 
       }
       printf("\n");
    }
@@ -424,7 +426,7 @@ void allocate(char * trozos[], int ntrozos, tListM list){
 
       cl=(key_t) strtoul(trozos[2],NULL,10);
       tam=(size_t) 0;
-      if((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL) // Acordarse de borrar Clave
+      if((p=ObtenerMemoriaShmget(cl,tam,list))!=NULL)
 		printf("Memoria compartida de clave %d en %p\n",cl, p);
       else
 		printf ("Imposible asignar memoria compartida clave %d:%s\n",cl,strerror(errno));
@@ -548,3 +550,38 @@ void deallocate(char * trozos[], int ntrozos, tListM list){
    deallocate_aux(i,list);
 }
 
+
+void io(char * trozos[], int ntrozos){
+   if(ntrozos<2) return;
+   if(strcmp(trozos[1],"read")==0){
+      char* arg[4];
+      arg[0] = trozos[2];
+      arg[1] = trozos[3];
+      arg[2] = trozos[4];
+      do_I_O_read(arg);
+   }
+
+   if(strcmp(trozos[1],"write")==0){
+      if(ntrozos<5){
+         printf("faltan parametros\n");
+         return;
+      }
+      ssize_t  n;
+      int desp = 0;
+      if(strcmp(trozos[2],"-o")==0) desp = 1;
+
+      
+
+      if (trozos[2+desp]==NULL || trozos[3+desp]==NULL || trozos[4+desp]==NULL){
+         printf("faltan parametros\n");
+         return;
+      }
+      void * p=cadtop(trozos[3+desp]);  /*convertimos de cadena a puntero*/
+      size_t cont=(size_t) atoll(trozos[4+desp]);
+
+      if ((n=EscribirFichero(trozos[2+desp],p,cont,desp))==-1)
+      perror ("Imposible leer fichero");
+      else
+      printf ("escritos %lld bytes en %s desde %p\n",(long long) n,trozos[2+desp],p);
+   }
+}
