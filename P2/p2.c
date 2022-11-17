@@ -4,6 +4,7 @@
 #include "funciones.h"
 
 
+
 int main() {
     bool continuar = true;
     tList lista;

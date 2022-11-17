@@ -55,6 +55,7 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
     // Las opciones conservan el guión (por ejemplo: fecha "-n")
     if(ntrozos!=0){
         if(strcmp(trozos[0],"fin") == 0 || strcmp(trozos[0],"salir") == 0 || strcmp(trozos[0],"bye") == 0) continuar = false;
+        else if(strcmp(trozos[0],"clear")==0) system("clear"); // Limpia la terminal
         else if(strcmp(trozos[0],"autores")==0) autores(trozos,ntrozos);
         else if(strcmp(trozos[0],"pid")==0) pid(trozos,ntrozos);
         else if(strcmp(trozos[0],"carpeta")==0) carpeta(trozos,ntrozos);
@@ -73,8 +74,9 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
         else if(strcmp(trozos[0],"memdump")==0) memdump(trozos,ntrozos);
         else if(strcmp(trozos[0],"deallocate")==0) deallocate(trozos,ntrozos,listam);
         else if(strcmp(trozos[0],"i-o")==0) io(trozos,ntrozos);
+        else if(strcmp(trozos[0],"recursiva")==0) recursiva(trozos,ntrozos);
+        else if(strcmp(trozos[0],"memoria")==0) memoria(trozos,ntrozos,listam);
         else printf("Comando no reconocido\n");
-        // Estructura if else?? Funciona aparentemente
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
         // para evitar usar parentesis y dificultando la lectura del codigo
     }
@@ -304,6 +306,7 @@ void ayuda(char* trozos[], int ntrozos){
         else if(strcmp(trozos[1],"delete")==0) printf("delete:\tBorra los ficheros o directorios pasados\n");
         else if(strcmp(trozos[1],"deltree")==0) printf("deltree:\t Borra recursivamente los directorios ('o fichero') dados\n"
         "Tener cuidado con su uso\n");
+        else if(strcmp(trozos[1],"clear")==0) printf("clear:\t Limpia la terminal. Comando añadido porque cerrar y limpiar es un coñado ;)\n");
         else printf("ayuda: %s no encontrado\n",trozos[1]);
     }
 }

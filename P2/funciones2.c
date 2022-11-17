@@ -1,6 +1,11 @@
 #include "funciones2.h"
 
 
+// Variables globales de memoria
+int mv1 = 1;
+double mv2 = 2.7;
+char mv3 = 'n';
+
 // Imprime la lista (0 imprime todo, 1 malloc, 2 shared, 3 map)
 void printList(int rev,tListM list){
    char time[40];
@@ -583,5 +588,51 @@ void io(char * trozos[], int ntrozos){
       perror ("Imposible leer fichero");
       else
       printf ("escritos %lld bytes en %s desde %p\n",(long long) n,trozos[2+desp],p);
+   }
+}
+
+
+void recursiva(char * trozos[], int ntrozos){
+   if(ntrozos<2) return;
+   int a;
+   if((a = atoi(trozos[1]))>=0) Recursiva(a);
+}
+
+void memoria(char * trozos[], int ntrozos,tListM list){
+   int mv4 = 9;
+   double mv5 = 2.7;
+   char mv6 = 'n';
+
+   static int mv7 = 1;
+   static double mv8 = 2.7;
+   static char mv9 = 'n';
+
+   int p;
+   if(ntrozos < 2) p = 0;
+   else{
+      if(strcmp(trozos[1],"-blocks")==0) p = 1;
+      if(strcmp(trozos[1],"-funcs")==0) p = 2;
+      if(strcmp(trozos[1],"-vars")==0) p = 3;
+      if(strcmp(trozos[1],"-all")==0) p = 0;
+      if(strcmp(trozos[1],"-pmap")==0){
+         Do_pmap();
+         return;
+      }
+   }
+
+   if((p == 0) || (p == 3)){
+      printf("Variables locales\t %14p, %14p, %14p\n", &mv4,&mv5,&mv6);
+      printf("Variables globales\t %14p, %14p, %14p\n", &mv1,&mv2,&mv3);
+      printf("Variables estaticas\t %14p, %14p, %14p\n", &mv7,&mv8,&mv9);
+   }
+
+   if(p == 0 || p == 2){
+      printf("Funciones programa\t %14p, %14p, %14p\n", memoria,recursiva,printList);
+      printf("Funciones libreria\t %14p, %14p, %14p\n", printf,exit,system);
+   }
+
+   if(p == 0 || p == 1){
+      printf("\n\n");
+      printList(0,list);
    }
 }

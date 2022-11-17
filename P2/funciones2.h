@@ -13,7 +13,11 @@
 
 #include "listam.h"
 
+
 #define TAMANO 2048
+
+
+
 
 //
 void allocate(char * trozos[], int ntrozos, tListM listaM);
@@ -21,5 +25,7 @@ void memfill(char * trozos[], int ntrozos);
 void memdump(char * trozos[], int ntrozos);
 void deallocate(char * trozos[], int ntrozos, tListM list);
 void io(char * trozos[], int ntrozos);
+void recursiva(char * trozos[], int ntrozos);
+void memoria(char * trozos[], int ntrozos,tListM list);
 
 
