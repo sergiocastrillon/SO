@@ -356,12 +356,15 @@ void memdump(char * trozos[], int ntrozos){
                   printf("\\r ");
                   break;
             }
-         }else printf("%2c ", mem[j]);
+         }else{
+            if(isprint(mem[j])) printf("%2c ",mem[j]);
+            else printf("   ");
+         } 
          
       }
       printf("\n");
       for (int j = i; j < 25 + i; j++){
-         printf("%02x ", mem[j]);
+         printf("%02x ", (unsigned char) mem[j]);
       }
       printf("\n");
    }
@@ -389,7 +392,10 @@ void allocate(char * trozos[], int ntrozos, tListM list){
          return;
       } 
       void * direccion;
-      if((direccion = malloc(tam)) == NULL) perror("No se pudo reservar memoria: ");
+      if((direccion = malloc(tam)) == NULL){
+         perror("No se pudo reservar memoria: ");
+         return;
+      } 
 
       // Guardamos la información en la lista
       insertMalloc(direccion,tam,list);
@@ -442,7 +448,6 @@ void deallocate_aux(tPosM pos,tListM list){
    if(strcmp("malloc",item.type)==0){
       void * p = item.direction;
       free(p);
-      printf("deallocate ok");
       removeItem(pos,list);
       return;
    }
@@ -537,10 +542,9 @@ void deallocate(char * trozos[], int ntrozos, tListM list){
    void * p = cadtop(trozos[1]);
    tPosM i = findDirection(p,list);
    if(i == NULL){ 
-      printList(0,list);
+      printf("La direccion %p no ha sido asignada\n",p);
       return;
    }
    deallocate_aux(i,list);
-   printf("Hol");
 }
 

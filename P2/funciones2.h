@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <stdint.h>
+#include <ctype.h>
 
 #include "listam.h"
 
