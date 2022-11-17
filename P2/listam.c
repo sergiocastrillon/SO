@@ -72,7 +72,7 @@ bool insertMap(void * direction, size_t tam,char file[],int descriptor,tListM li
 
 
 
-void removeItem(tPosM pos, tListM list){
+void removeItem(tPosM pos, tListM list){ // Recordar que las posiciones pueden variar al borrar
     tPosM temp = list;
     // Si el elemento a borrar no es el último de la lista
     if(pos->sig == NULL){
@@ -108,6 +108,7 @@ tPosM previousM(tPosM pos, tListM list){
 
 // next
 tPosM nextM(tPosM pos, tListM list){
+    if(pos == NULL) return NULL;
     return pos->sig;
 }
 // next

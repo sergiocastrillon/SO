@@ -27,5 +27,6 @@ void deallocate(char * trozos[], int ntrozos, tListM list);
 void io(char * trozos[], int ntrozos);
 void recursiva(char * trozos[], int ntrozos);
 void memoria(char * trozos[], int ntrozos,tListM list);
+void deallocate_all(tListM list);
 
 

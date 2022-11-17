@@ -451,7 +451,7 @@ void allocate(char * trozos[], int ntrozos, tListM list){
 
 
 void deallocate_aux(tPosM pos,tListM list){
-   tItemM item = pos->data;
+   tItemM item = getItem(pos,list);
    if(strcmp("malloc",item.type)==0){
       void * p = item.direction;
       free(p);
@@ -634,5 +634,14 @@ void memoria(char * trozos[], int ntrozos,tListM list){
    if(p == 0 || p == 1){
       printf("\n\n");
       printList(0,list);
+   }
+}
+
+
+void deallocate_all(tListM list){
+   tPosM p = firstM(list);
+   while(!isEmptyListM(list)){
+      deallocate_aux(p,list);
+      p = firstM(list);
    }
 }

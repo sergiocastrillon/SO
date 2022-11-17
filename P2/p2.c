@@ -2,6 +2,7 @@
 // Mario Freire | mario.freire
 
 #include "funciones.h"
+#include "funciones2.h"
 
 
 
@@ -19,6 +20,8 @@ int main() {
         continuar = procesarEntrada(entrada,lista,listaMem);
     }
     deleteList(&lista);
+    deallocate_all(listaMem);
+    if(!isEmptyListM(listaMem)) printf("No se ha podido liberar toda la memoria\n");
     deleteListM(&listaMem);
     return 0;
 }
