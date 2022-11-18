@@ -306,7 +306,22 @@ void ayuda(char* trozos[], int ntrozos){
         else if(strcmp(trozos[1],"delete")==0) printf("delete:\tBorra los ficheros o directorios pasados\n");
         else if(strcmp(trozos[1],"deltree")==0) printf("deltree:\t Borra recursivamente los directorios ('o fichero') dados\n"
         "Tener cuidado con su uso\n");
-        else if(strcmp(trozos[1],"clear")==0) printf("clear:\t Limpia la terminal. Comando añadido porque cerrar y limpiar es un coñado ;)\n");
+        else if(strcmp(trozos[1],"clear")==0) printf("clear:\t Limpia la terminal. Comando añadido porque cerrar y limpiar es un coñazo ;)\n");
+        else if(strcmp(trozos[1],"allocate")==0) printf("allocate [-malloc|-shared|-createshared|-mmap]:\tAsigna un bloque de memoria\n\t-malloc tam: asigna memoria malloc de tamaño tam\n"
+        "\t-createshared cl tam: crea y asigna un bloque shared con la clave cl y el tamaño tam\n\t-shared cl: Asigna el bloque de memoria compartida con clave cl\n"
+        "\t-mmap fich perm: mapea el fichero fich con los permisos perm (formato: rwx)\n");
+        else if(strcmp(trozos[1],"deallocate")==0) printf("deallocate [-malloc|-shared|-delkey|-mmap|dir]:\t Desasigna un bloque de memoria\n"
+        "\t-malloc tam: Desasigna el bloque malloc con tamaño tam\n\t-shared cl: Desasigna el bloque de memoria compartida con clave cl (la clave sigue existiendo)\n"
+        "\t-delkey cl: Borra la clave cl (sin desmapear), es decir ya no se puede clonar la memoria con clave cl\n\t-mmap fich: desmapea el fichero fich\n"
+        "\tdir: desasigna el bloque de memoria con dirección dir\n");
+        else if(strcmp(trozos[1],"memfill")==0) printf("memfill dir n content:\tLlena n bytes a partir de la direccion dir con el char content (o por defecto 'A')\n");
+        else if(strcmp(trozos[1],"memdump")==0) printf("memdump addr n:\tMuestra por pantalla el contenido de n bytes a partir de la dirección addr\n");
+        else if(strcmp(trozos[1],"i-o")==0) printf("i-o [read|write] [-o]:\n\tread fich adrr n: Lee n bytes desde fich a adrr\n\twrite [-o] fich adrr n: Escribe"
+        " n bytes desde adrr a fich. Con la opción -o si el fichero ya existe se sobreescribe\n");
+        else if(strcmp(trozos[1],"memoria")==0) printf("memoria [-blocks|-funcs|-vars|-all|-pmap]:\t Muestra detalles de memoria del proceso de la shell\n"
+        "\t-blocks: Muestra los bloques de memoria asignados\n\t-funcs: Muestra las direcciones de memoria de las funciones\n\t-vars: Muestra las direcciones de las variables\n"
+        "\t-all: Muestra todo lo anterior\n\t-pmap: ejecuta el comando pmap o similar sobre el proceso de la shell\n");
+        else if(strcmp(trozos[1],"recursiva")==0) printf("recursiva [-n]:\tLlama n veces a la función recursiva\n");
         else printf("ayuda: %s no encontrado\n",trozos[1]);
     }
 }
