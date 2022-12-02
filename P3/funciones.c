@@ -76,6 +76,7 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
         else if(strcmp(trozos[0],"i-o")==0) io(trozos,ntrozos);
         else if(strcmp(trozos[0],"recursiva")==0) recursiva(trozos,ntrozos);
         else if(strcmp(trozos[0],"memoria")==0) memoria(trozos,ntrozos,listam);
+        else if(strcmp(trozos[0],"priority")==0) priority(trozos,ntrozos);
         else newProcessExec(trozos,ntrozos);
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
         // para evitar usar parentesis y dificultando la lectura del codigo

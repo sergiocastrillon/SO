@@ -6,6 +6,7 @@
 
 #include "funciones1.h"
 #include "funciones2.h"
+#include "funciones3.h"
 
 
 

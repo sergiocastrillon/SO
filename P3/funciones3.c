@@ -68,14 +68,14 @@ char * Ejecutable (char *s)
 	return s;
 }
 
-int OurExecvpe(const char *file, char *const argv[], char *const envp[])
+int OurExecvpe(char *file, char *const argv[], char *const envp[])
 {
-   return (execve(Ejecutable(file),argv, envp);
+   return (execve(Ejecutable(file),argv, envp));
 }
-
-/*las siguientes funciones nos permiten obtener el nombre de una senal a partir
-del número y viceversa */
-static struct SEN sigstrnum[]={   
+/* 
+las siguientes funciones nos permiten obtener el nombre de una senal a partir
+del número y viceversa 
+static struct SEN sigstrnum[200]={   
 	{"HUP", SIGHUP},
 	{"INT", SIGINT},
 	{"QUIT", SIGQUIT},
@@ -106,7 +106,7 @@ static struct SEN sigstrnum[]={
 	{"WINCH", SIGWINCH}, 
 	{"IO", SIGIO},
 	{"SYS", SIGSYS},
-/*senales que no hay en todas partes*/
+//senales que no hay en todas partes
 #ifdef SIGPOLL
 	{"POLL", SIGPOLL},
 #endif
@@ -144,10 +144,10 @@ static struct SEN sigstrnum[]={
 	{"WAITING", SIGWAITING},
 #endif
  	{NULL,-1},
-	};    /*fin array sigstrnum */
+	};    //fin array sigstrnum 
 
 
-int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre*/ 
+int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre 
 { 
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
@@ -157,8 +157,8 @@ int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre*/
 }
 
 
-char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal*/ 
-{			/* para sitios donde no hay sig2str*/
+char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal 
+{			 para sitios donde no hay sig2str
  int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
   	if (sen==sigstrnum[i].senal)
@@ -166,8 +166,35 @@ char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal*/
  return ("SIGUNKNOWN");
 }
 
-
+ */
 
 void newProcessExec(char * trozos[], int ntrozos){
+	return;
+}
 
+void priority(char * trozos[], int ntrozos){
+	int pid;
+	if(ntrozos<2){
+		pid = getpid(); 
+	};
+	if(ntrozos==2){
+		pid = atoi(trozos[1]);
+	}
+	errno = -1;
+	int prio = getpriority(PRIO_PROCESS,pid);
+	if(errno == -1) printf("La prioridad del proceso %d es: %d\n",pid,prio);
+	else printf("Imposible obtener la prioridad del proceso %d: %s\n",pid,strerror(errno));
+}
+
+void actualizarProceso(struct tItemP* p){
+	int est;
+	if(waitpid(p->pid,&est,WNOHANG|WUNTRACED|WCONTINUED)==p->pid){
+		if(WIFEXITED(est)){
+			p->status = 0;
+			p->signal = WEXITSTATUS(est);
+		}else if(WIFSIGNALED(est)){
+			p->status = 1;
+			p->signal = WTERMSIG(est);
+		}else if(){}
+	}
 }
