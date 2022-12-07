@@ -44,7 +44,7 @@ void leerEntrada(char entrada[],tList lista){
 
 // No hay alguna manera de "implementar" un diccionario en C??
 
-bool procesarEntrada(char entrada[],tList lista,tListM listam){
+bool procesarEntrada(char entrada[],tList lista,tListM listam, char *arg3[]){
     bool continuar = true;
     char* trozos[50]; // *** stack smashing detected ***: terminated si el numero de trozos supera el tamaño de char*??
     // Si se introduce un espacio al final del comando el programa peta, relacionado con lo de arriba??
@@ -61,14 +61,16 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
         else if(strcmp(trozos[0],"carpeta")==0) carpeta(trozos,ntrozos);
         else if(strcmp(trozos[0],"fecha")==0) fecha(trozos,ntrozos);
         else if(strcmp(trozos[0],"hist")==0) hist(trozos,ntrozos,lista);
-        else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista,copia,listam);
+        else if(strcmp(trozos[0],"comando")==0) comando(trozos,ntrozos,lista,copia,listam,arg3);
         else if(strcmp(trozos[0],"infosis")==0) infosis();
         else if(strcmp(trozos[0],"ayuda")==0) ayuda(trozos,ntrozos);
+        // Sistema ficheros
         else if(strcmp(trozos[0],"create")==0) create(trozos,ntrozos);
         else if(strcmp(trozos[0],"stat")==0) stat_o(trozos,ntrozos);
         else if(strcmp(trozos[0],"list")==0) list(trozos,ntrozos);
         else if(strcmp(trozos[0],"delete")==0) delete(trozos,ntrozos);
         else if(strcmp(trozos[0],"deltree")==0) deleteRec(trozos,ntrozos);
+        // Memoria
         else if(strcmp(trozos[0],"allocate")==0) allocate(trozos,ntrozos,listam);
         else if(strcmp(trozos[0],"memfill")==0) memfill(trozos,ntrozos);
         else if(strcmp(trozos[0],"memdump")==0) memdump(trozos,ntrozos);
@@ -76,8 +78,13 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam){
         else if(strcmp(trozos[0],"i-o")==0) io(trozos,ntrozos);
         else if(strcmp(trozos[0],"recursiva")==0) recursiva(trozos,ntrozos);
         else if(strcmp(trozos[0],"memoria")==0) memoria(trozos,ntrozos,listam);
+        // Procesos
         else if(strcmp(trozos[0],"priority")==0) priority(trozos,ntrozos);
-        else newProcessExec(trozos,ntrozos);
+        else if(strcmp(trozos[0],"showvar")==0) showvar(trozos,ntrozos,arg3);
+        else if(strcmp(trozos[0],"changevar")==0) changevar(trozos,ntrozos,arg3);
+        else if(strcmp(trozos[0],"showenv")==0) showenv(trozos,ntrozos,arg3);
+        else if(strcmp(trozos[0],"exec")==0) exec(trozos,ntrozos);
+        //else newProcessExec(trozos,ntrozos);
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
         // para evitar usar parentesis y dificultando la lectura del codigo
     }
@@ -217,7 +224,7 @@ void hist(char* trozos[],int ntrozos,tList lista){
 
 // comando
 
-void comando(char* trozos[], int ntrozos, tList lista,char entrada[],tListM listam){
+void comando(char* trozos[], int ntrozos, tList lista,char entrada[],tListM listam,char *arg3[]){
     char* error;
     bool ejecucion = true;
     char comandoHist[MAX];
@@ -254,7 +261,7 @@ void comando(char* trozos[], int ntrozos, tList lista,char entrada[],tListM list
 
     if(ejecucion){
         printf("Ejecutando orden del hist (%s): %s\n",trozos[1],comandoHist);
-        procesarEntrada(comandoHist,lista,listam);
+        procesarEntrada(comandoHist,lista,listam,arg3);
     }
 }
 

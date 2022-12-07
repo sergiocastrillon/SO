@@ -6,7 +6,7 @@
 
 
 
-int main() {
+int main(int argc, char *argv[], char *arg3[]){
     bool continuar = true;
     tList lista;
     tListM listaMem;
@@ -17,7 +17,7 @@ int main() {
         char entrada[MAX];
         leerEntrada(entrada,lista);
         //printf("%s",linea); // Comprobar funcionamiento de leerEntrada
-        continuar = procesarEntrada(entrada,lista,listaMem);
+        continuar = procesarEntrada(entrada,lista,listaMem,arg3);
     }
     deleteList(&lista);
     deallocate_all(listaMem);
