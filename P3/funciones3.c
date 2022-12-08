@@ -173,13 +173,13 @@ char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal
 void exec(char *trozos[], int ntrozos)
 {
 	int i, ex, j;
-	int a, e;
+	int a;
 	bool vars = true;
 	printf("a");
 
 	// char **aux;// = trozos;
-	char *aux2[MAXVAR] = NULL;
-	char *aux[MAXVAR] = NULL;
+	char *aux2[MAXVAR];
+	char *aux[MAXVAR];
 
 	printf("g");
 
@@ -195,7 +195,7 @@ void exec(char *trozos[], int ntrozos)
 	}
 
 	printf("H");
-	aux[i-1] = strndup("\0", 2);
+	aux[i-1] = NULL;
 	// strcpy(aux[i],(char *) NULL);
 
 	printf("o");
@@ -210,17 +210,19 @@ void exec(char *trozos[], int ntrozos)
 		i++;
 		j++;
 	}
-	aux2[j] = strndup("\0", 2);
+	aux2[j] = NULL;
+	//aux2[j] = strndup("\0", 2);
+	//aux2[j+1] = strndup("\0", 2);
 	/* while(aux[j] != NULL){
 		printf("%s\n",aux[j]);
 		j++;
 	} */
-	printf("%s", aux2[j-1]);
-	// execve(trozos[1],aux2,aux);
+	//printf("%s", aux2[2]);
+	//execve(trozos[ex], aux2, aux);
 	if (vars)
-		OurExecvpe(trozos[ex], aux2, aux);
+		OurExecvpe(trozos[ex], &aux2[0], aux);
 	else
-		OurExecvpe(trozos[ex], aux2, environ);
+		OurExecvpe(trozos[ex], &aux2[0], environ);
 }
 
 void priority(char *trozos[], int ntrozos)
