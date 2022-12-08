@@ -170,37 +170,27 @@ char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal
 
  */
 
-void exec(char *trozos[], int ntrozos)
-{
+void exec(char *trozos[], int ntrozos){
 	int i, ex, j;
 	int a;
 	bool vars = true;
-	printf("a");
 
-	// char **aux;// = trozos;
+
 	char *aux2[MAXVAR];
 	char *aux[MAXVAR];
 
-	printf("g");
 
 	i = 1;
 	ex = i;
-	while (i < ntrozos)
-	{
-		if ((a = BuscarVariable(trozos[i], environ)) == -1)
-			break;
-		printf("f");
+	while (i < ntrozos){
+		if ((a = BuscarVariable(trozos[i], environ)) == -1) break;
 		aux[i-1] = strdup(environ[a]);
 		i++;
 	}
-
-	printf("H");
 	aux[i-1] = NULL;
-	// strcpy(aux[i],(char *) NULL);
 
-	printf("o");
-	if (i == ex)
-		vars = false; // entonces pasamos environ
+	if (i == ex) vars = false; // entonces pasamos environ
+
 	ex = i;
 
 	j = 0;
@@ -211,14 +201,24 @@ void exec(char *trozos[], int ntrozos)
 		j++;
 	}
 	aux2[j] = NULL;
-	//aux2[j] = strndup("\0", 2);
-	//aux2[j+1] = strndup("\0", 2);
-	/* while(aux[j] != NULL){
-		printf("%s\n",aux[j]);
-		j++;
-	} */
-	//printf("%s", aux2[2]);
-	//execve(trozos[ex], aux2, aux);
+
+	if(i < ntrozos && trozos[i][0] == '@'){
+		int x = 1;
+		char a[4];
+		while(trozos[i][x-1] != '\0'){
+			a[x-1] = trozos[i][x];
+			x++;
+		}
+		
+		int pri = atoi(a);
+		printf("%d",pri);
+		if (setpriority(PRIO_PROCESS, getpid(), pri) == -1){
+			printf("Error al intentar ejecutar con prioridad %d\n: %s\n",pri, strerror(errno));
+			return;
+		}
+		
+	}
+
 	if (vars)
 		OurExecvpe(trozos[ex], &aux2[0], aux);
 	else
