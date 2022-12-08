@@ -2,85 +2,86 @@
 
 extern char **environ;
 
-void Cmd_fork (char *tr[])
+void Cmd_fork(char *tr[])
 {
 	pid_t pid;
-	
-	if ((pid=fork())==0){
-/*		VaciarListaProcesos(&LP); Depende de la implementación de cada uno*/
-		printf ("ejecutando proceso %d\n", getpid());
+
+	if ((pid = fork()) == 0)
+	{
+		/*		VaciarListaProcesos(&LP); Depende de la implementación de cada uno*/
+		printf("ejecutando proceso %d\n", getpid());
 	}
-	else if (pid!=-1)
-		waitpid (pid,NULL,0);
+	else if (pid != -1)
+		waitpid(pid, NULL, 0);
 }
 
-int BuscarVariable (char * var, char *e[])  /*busca una variable en el entorno que se le pasa como parámetro*/
+int BuscarVariable(char const *var, char *e[]) /*busca una variable en el entorno que se le pasa como parámetro*/
 {
-  int pos=0;
-  char aux[MAXVAR];
-  
-  strcpy (aux,var);
-  strcat (aux,"=");
-  
-  while (e[pos]!=NULL)
-    if (!strncmp(e[pos],aux,strlen(aux)))
-      return (pos);
-    else 
-      pos++;
-  errno=ENOENT;   /*no hay tal variable*/
-  return(-1);
+	int pos = 0;
+	char aux[MAXVAR];
+
+	strcpy(aux, var);
+	strcat(aux, "=");
+
+	while (e[pos] != NULL)
+		if (!strncmp(e[pos], aux, strlen(aux)))
+			return (pos);
+		else
+			pos++;
+	errno = ENOENT; /*no hay tal variable*/
+	return (-1);
 }
 
+int CambiarVariable(char *var, char *valor, char *e[]) /*cambia una variable en el entorno que se le pasa como parámetro*/
+{													   /*lo hace directamente, no usa putenv*/
+	int pos;
+	char *aux;
 
-int CambiarVariable(char * var, char * valor, char *e[]) /*cambia una variable en el entorno que se le pasa como parámetro*/
-{                                                        /*lo hace directamente, no usa putenv*/
-  int pos;
-  char *aux;
-   
-  if ((pos=BuscarVariable(var,e))==-1)
-    return(-1);
- 
-  if ((aux=(char *)malloc(strlen(var)+strlen(valor)+2))==NULL)
-	return -1;
-  strcpy(aux,var);
-  strcat(aux,"=");
-  strcat(aux,valor);
-  e[pos]=aux;
-  return (pos);
+	if ((pos = BuscarVariable(var, e)) == -1)
+		return (-1);
+
+	if ((aux = (char *)malloc(strlen(var) + strlen(valor) + 2)) == NULL)
+		return -1;
+	strcpy(aux, var);
+	strcat(aux, "=");
+	strcat(aux, valor);
+	e[pos] = aux;
+	return (pos);
 }
 
 /*para sistemas donde no hay (o no queremos usuar) execvpe*/
-char * Ejecutable (char *s)
+char *Ejecutable(char *s)
 {
 	char path[MAXNAME];
 	static char aux2[MAXNAME];
 	struct stat st;
 	char *p;
-	if (s==NULL || (p=getenv("PATH"))==NULL)
+	if (s == NULL || (p = getenv("PATH")) == NULL)
 		return s;
-	if (s[0]=='/' || !strncmp (s,"./",2) || !strncmp (s,"../",3))
-        return s;       /*is an absolute pathname*/
-	strncpy (path, p, MAXNAME);
-	for (p=strtok(path,":"); p!=NULL; p=strtok(NULL,":")){
-       sprintf (aux2,"%s/%s",p,s);
-	   if (lstat(aux2,&st)!=-1)
-		return aux2;
+	if (s[0] == '/' || !strncmp(s, "./", 2) || !strncmp(s, "../", 3))
+		return s; /*is an absolute pathname*/
+	strncpy(path, p, MAXNAME);
+	for (p = strtok(path, ":"); p != NULL; p = strtok(NULL, ":"))
+	{
+		sprintf(aux2, "%s/%s", p, s);
+		if (lstat(aux2, &st) != -1)
+			return aux2;
 	}
 	return s;
 }
 
-int OurExecvpe(char *file, char *const argv[], char *const envp[])
+int OurExecvpe(char *file, char *argv[MAXVAR], char *envp[MAXVAR])
 {
-   return (execve(Ejecutable(file),argv, envp));
+	return (execve(Ejecutable(file), argv, envp));
 }
-/* 
+/*
 las siguientes funciones nos permiten obtener el nombre de una senal a partir
-del número y viceversa 
-static struct SEN sigstrnum[200]={   
+del número y viceversa
+static struct SEN sigstrnum[200]={
 	{"HUP", SIGHUP},
 	{"INT", SIGINT},
 	{"QUIT", SIGQUIT},
-	{"ILL", SIGILL}, 
+	{"ILL", SIGILL},
 	{"TRAP", SIGTRAP},
 	{"ABRT", SIGABRT},
 	{"IOT", SIGIOT},
@@ -89,14 +90,14 @@ static struct SEN sigstrnum[200]={
 	{"KILL", SIGKILL},
 	{"USR1", SIGUSR1},
 	{"SEGV", SIGSEGV},
-	{"USR2", SIGUSR2}, 
+	{"USR2", SIGUSR2},
 	{"PIPE", SIGPIPE},
 	{"ALRM", SIGALRM},
 	{"TERM", SIGTERM},
 	{"CHLD", SIGCHLD},
 	{"CONT", SIGCONT},
 	{"STOP", SIGSTOP},
-	{"TSTP", SIGTSTP}, 
+	{"TSTP", SIGTSTP},
 	{"TTIN", SIGTTIN},
 	{"TTOU", SIGTTOU},
 	{"URG", SIGURG},
@@ -104,7 +105,7 @@ static struct SEN sigstrnum[200]={
 	{"XFSZ", SIGXFSZ},
 	{"VTALRM", SIGVTALRM},
 	{"PROF", SIGPROF},
-	{"WINCH", SIGWINCH}, 
+	{"WINCH", SIGWINCH},
 	{"IO", SIGIO},
 	{"SYS", SIGSYS},
 //senales que no hay en todas partes
@@ -144,114 +145,144 @@ static struct SEN sigstrnum[200]={
 #ifdef SIGWAITING
 	{"WAITING", SIGWAITING},
 #endif
- 	{NULL,-1},
-	};    //fin array sigstrnum 
+	{NULL,-1},
+	};    //fin array sigstrnum
 
 
-int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre 
-{ 
+int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre
+{
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
-  	if (!strcmp(sen, sigstrnum[i].nombre))
+	if (!strcmp(sen, sigstrnum[i].nombre))
 		return sigstrnum[i].senal;
   return -1;
 }
 
 
-char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal 
+char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal
 {			 para sitios donde no hay sig2str
  int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
-  	if (sen==sigstrnum[i].senal)
+	if (sen==sigstrnum[i].senal)
 		return sigstrnum[i].nombre;
  return ("SIGUNKNOWN");
 }
 
  */
 
-void exec(char * trozos[], int ntrozos){
-	int i=1,ex,j=0;
-	int a;
-	//char **aux;// = trozos;
-	char *aux2[100];
-	char ** aux;
+void exec(char *trozos[], int ntrozos)
+{
+	int i, ex, j;
+	int a, e;
+	bool vars = true;
+	printf("a");
 
+	// char **aux;// = trozos;
+	char *aux2[MAXVAR] = NULL;
+	char *aux[MAXVAR] = NULL;
+
+	printf("g");
+
+	i = 1;
 	ex = i;
-	while(i < ntrozos){
-		if((a = BuscarVariable(trozos[i],environ))==-1) break;
-		aux[i] = environ[a];
+	while (i < ntrozos)
+	{
+		if ((a = BuscarVariable(trozos[i], environ)) == -1)
+			break;
+		printf("f");
+		aux[i-1] = strdup(environ[a]);
 		i++;
 	}
-	aux[i] = NULL;
-	if(i == ex) aux = environ;
-	ex = i;
-	
-	i++;
 
-	while(i < ntrozos){
-		aux2[j] = trozos[i];   
-		if(trozos[i][0]=='@') break;
+	printf("H");
+	aux[i-1] = strndup("\0", 2);
+	// strcpy(aux[i],(char *) NULL);
+
+	printf("o");
+	if (i == ex)
+		vars = false; // entonces pasamos environ
+	ex = i;
+
+	j = 0;
+	while (i < ntrozos){
+		if (trozos[i][0] == '@') break;
+		aux2[j] = strndup(trozos[i], MAXVAR);
 		i++;
 		j++;
 	}
-	aux2[j] = malloc(sizeof(char [10]));
-	strcpy(aux2[j],"\0");
-	aux2[j+1] = NULL;
+	aux2[j] = strndup("\0", 2);
 	/* while(aux[j] != NULL){
 		printf("%s\n",aux[j]);
 		j++;
 	} */
-
-
-	//printf("%s",trozos[1]);
-	//execve(trozos[1],aux2,aux);
-	OurExecvpe(trozos[1],trozos,aux);
+	printf("%s", aux2[j-1]);
+	// execve(trozos[1],aux2,aux);
+	if (vars)
+		OurExecvpe(trozos[ex], aux2, aux);
+	else
+		OurExecvpe(trozos[ex], aux2, environ);
 }
 
-void priority(char * trozos[], int ntrozos){
+void priority(char *trozos[], int ntrozos)
+{
 	int pid;
-	if(ntrozos<3){
-		if(ntrozos==1) pid = getpid(); 
-	
-		if(ntrozos==2) pid = atoi(trozos[1]);
+	if (ntrozos < 3)
+	{
+		if (ntrozos == 1)
+			pid = getpid();
+
+		if (ntrozos == 2)
+			pid = atoi(trozos[1]);
 
 		errno = -1;
-		int prio = getpriority(PRIO_PROCESS,pid);
-		if(errno == -1) printf("La prioridad del proceso %d es: %d\n",pid,prio);
-		else printf("Imposible obtener la prioridad del proceso %d: %s\n",pid,strerror(errno));
+		int prio = getpriority(PRIO_PROCESS, pid);
+		if (errno == -1)
+			printf("La prioridad del proceso %d es: %d\n", pid, prio);
+		else
+			printf("Imposible obtener la prioridad del proceso %d: %s\n", pid, strerror(errno));
 		return;
 	}
 
 	pid = atoi(trozos[1]);
 	// Si pid 0 y trozos[1][0] no es 0 entonces es un error de atoi, cambiar pid a -1 para evitar cambios de prioridad no requeridos
-	if(pid == 0 && trozos[1][0] != '0') pid = -1;
+	if (pid == 0 && trozos[1][0] != '0')
+		pid = -1;
 
 	int prio = atoi(trozos[2]);
-	if(setpriority(PRIO_PROCESS,pid,prio) != -1) printf("La prioridad del proceso %d"
-	" fue cambiada a %d\n",pid,prio);
-	else printf("Error al intentar cambiar la prioridad del proceso %d: %s\n",pid,strerror(errno));
+	if (setpriority(PRIO_PROCESS, pid, prio) != -1)
+		printf("La prioridad del proceso %d"
+			   " fue cambiada a %d\n",
+			   pid, prio);
+	else
+		printf("Error al intentar cambiar la prioridad del proceso %d: %s\n", pid, strerror(errno));
 }
 
-
-
-void showvar(char * trozos[], int ntrozos, char *arg3[]){
-	if(ntrozos < 2) return;
+void showvar(char *trozos[], int ntrozos, char *arg3[])
+{
+	if (ntrozos < 2)
+		return;
 	int a;
 	// BuscarVariable hace un set de errno si no se encuentra la variable
 	// Arg3
-	if((a = BuscarVariable(trozos[1],arg3))!=-1) printf ("Con arg3 main %s(%p) @%p\n", arg3[a],
-	arg3[a],&arg3[a]);
-	else printf("Error buscando la variable %s: %s\n",trozos[1],strerror(errno));
-	
+	if ((a = BuscarVariable(trozos[1], arg3)) != -1)
+		printf("Con arg3 main %s(%p) @%p\n", arg3[a],
+			   arg3[a], &arg3[a]);
+	else
+		printf("Error buscando la variable %s: %s\n", trozos[1], strerror(errno));
+
 	// environ
-	if((a = BuscarVariable(trozos[1],environ))!=-1) printf("  Con environ %s(%p) @%p\n", environ[a],
-	environ[a],&environ[a]);
-	else printf("Error buscando la variable %s: %s\n",trozos[1],strerror(errno));
+	if ((a = BuscarVariable(trozos[1], environ)) != -1)
+		printf("  Con environ %s(%p) @%p\n", environ[a],
+			   environ[a], &environ[a]);
+	else
+		printf("Error buscando la variable %s: %s\n", trozos[1], strerror(errno));
 
 	// getenv
-	char * b;
-	if((b = getenv(trozos[1]))!=NULL) printf("   Con getenv %s(%p)\n", b,b);
-	else printf("Error buscando la variable\n");
+	char *b;
+	if ((b = getenv(trozos[1])) != NULL)
+		printf("   Con getenv %s(%p)\n", b, b);
+	else
+		printf("Error buscando la variable\n");
 
 	// Anotación importante, las direcciones entre paréntesis indican donde se
 	// encuentra el primer carácter que se imprime, eso quiere decir que las direcciones de arg3
@@ -260,61 +291,67 @@ void showvar(char * trozos[], int ntrozos, char *arg3[]){
 	// Ej: Si HOME=/user/sergio está en la 0x0 con getenv sería /user/sergio y estaría en 0x5
 }
 
-void changevar(char * trozos[], int ntrozos, char *arg3[]){
-	if(ntrozos < 4) return;
+void changevar(char *trozos[], int ntrozos, char *arg3[])
+{
+	if (ntrozos < 4)
+		return;
 	int aux;
-	if(strcmp(trozos[1],"-a")==0) aux = CambiarVariable(trozos[2],trozos[3],arg3);
-	if(strcmp(trozos[1],"-e")==0) aux = CambiarVariable(trozos[2],trozos[3],environ);
-	if(strcmp(trozos[1],"-p")==0){
-		//char a[MAXVAR];
-		// Añadir check de que se ha podido reservar memoria y liberar memoria
+	if (strcmp(trozos[1], "-a") == 0)
+		aux = CambiarVariable(trozos[2], trozos[3], arg3);
+	if (strcmp(trozos[1], "-e") == 0)
+		aux = CambiarVariable(trozos[2], trozos[3], environ);
+	if (strcmp(trozos[1], "-p") == 0)
+	{
+		// char a[MAXVAR];
+		//  Añadir check de que se ha podido reservar memoria y liberar memoria
 		char *a;
-		if((a = (char *)malloc(strlen(trozos[2])+strlen(trozos[3])+2))==NULL) return;
-		strcpy(a,trozos[2]);
-  		strcat(a,"=");
-  		strcat(a,trozos[3]);
-		strcat(a,"\0");
+		if ((a = (char *)malloc(strlen(trozos[2]) + strlen(trozos[3]) + 2)) == NULL)
+			return;
+		strcpy(a, trozos[2]);
+		strcat(a, "=");
+		strcat(a, trozos[3]);
+		strcat(a, "\0");
 		aux = putenv(a);
-		if(aux != 0) aux = -1;
+		if (aux != 0)
+			aux = -1;
 		free(a);
 	}
 
-	if(aux == -1) printf("Imposible cambiar variable %s: %s\n",trozos[2],strerror(errno));
+	if (aux == -1)
+		printf("Imposible cambiar variable %s: %s\n", trozos[2], strerror(errno));
 }
 
-
-void showenv(char * trozos[], int ntrozos, char *arg3[]){
-	int i=0;
-	if(ntrozos == 1){
-		while (arg3[i]!=NULL) {
-		printf ("%p->main arg3[%d]=(%p) %s\n", &arg3[i],
-		i,arg3[i],arg3[i]);
-		i++;
+void showenv(char *trozos[], int ntrozos, char *arg3[])
+{
+	int i = 0;
+	if (ntrozos == 1)
+	{
+		while (arg3[i] != NULL)
+		{
+			printf("%p->main arg3[%d]=(%p) %s\n", &arg3[i],
+				   i, arg3[i], arg3[i]);
+			i++;
 		}
 		return;
 	}
 
-	if(strcmp(trozos[1],"-environ")==0){
-		while (environ[i]!=NULL) {
-		printf ("%p->environ[%d]=(%p) %s\n", &environ[i],
-		i,environ[i],environ[i]);
-		i++;
+	if (strcmp(trozos[1], "-environ") == 0)
+	{
+		while (environ[i] != NULL)
+		{
+			printf("%p->environ[%d]=(%p) %s\n", &environ[i],
+				   i, environ[i], environ[i]);
+			i++;
 		}
 		return;
 	}
 
-	if(strcmp(trozos[1],"-addr")==0){
-		printf("environ: %p (almacenado en %p)\n",environ,&environ);
-		printf("main arg3: %p (almacenado en %p)\n",arg3,&arg3);
+	if (strcmp(trozos[1], "-addr") == 0)
+	{
+		printf("environ: %p (almacenado en %p)\n", environ, &environ);
+		printf("main arg3: %p (almacenado en %p)\n", arg3, &arg3);
 	}
-
-	
-	
 }
-
-
-
-
 
 /* void actualizarProceso(tItemP* p){
 	int est;
