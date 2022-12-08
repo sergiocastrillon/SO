@@ -2,8 +2,8 @@
 
 extern char **environ;
 
-void Cmd_fork(char *tr[])
-{
+//void Cmd_fork(char *tr[])
+void Cmd_fork(){
 	pid_t pid;
 
 	if ((pid = fork()) == 0)
@@ -170,8 +170,8 @@ char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal
 
  */
 
-void exec(char *trozos[], int ntrozos){
-	int i, ex, j;
+void exec(char *trozos[], int ntrozos,bool exec){
+	int i, ex,z;
 	int a;
 	bool vars = true;
 
@@ -179,28 +179,32 @@ void exec(char *trozos[], int ntrozos){
 	char *aux2[MAXVAR];
 	char *aux[MAXVAR];
 
-
-	i = 1;
+	z = 0;
+	if(exec){
+		i = 1;
+	}else i = 0;
+	
 	ex = i;
-	while (i < ntrozos){
+	while (i < ntrozos){ // Buscamos variables de entorno
 		if ((a = BuscarVariable(trozos[i], environ)) == -1) break;
-		aux[i-1] = strdup(environ[a]);
+		aux[z] = strdup(environ[a]);
 		i++;
+		z++;
 	}
-	aux[i-1] = NULL;
+	aux[z] = NULL;
 
 	if (i == ex) vars = false; // entonces pasamos environ
 
 	ex = i;
 
-	j = 0;
-	while (i < ntrozos){
-		if (trozos[i][0] == '@') break;
-		aux2[j] = strndup(trozos[i], MAXVAR);
+	z = 0;
+	while (i < ntrozos){ // Buscamos argumentos opcionales (executable siempre se copia)
+		if (trozos[i][0] == '@' || trozos[i][0] == '&') break;
+		aux2[z] = strndup(trozos[i], MAXVAR);
 		i++;
-		j++;
+		z++;
 	}
-	aux2[j] = NULL;
+	aux2[z] = NULL;
 
 	if(i < ntrozos && trozos[i][0] == '@'){
 		int x = 1;
@@ -220,13 +224,33 @@ void exec(char *trozos[], int ntrozos){
 	}
 
 	if (vars)
-		OurExecvpe(trozos[ex], &aux2[0], aux);
+		OurExecvpe(trozos[ex], aux2, aux);
 	else
-		OurExecvpe(trozos[ex], &aux2[0], environ);
+		OurExecvpe(trozos[ex], aux2, environ);
+
+	// Liberar memoria en caso de ejecucion con fork??
+	for(i = 0; aux[i] != NULL; i++) free(aux[i]);
+	for(i = 0; aux2[i] != NULL; i++) free(aux2[i]);
 }
 
-void priority(char *trozos[], int ntrozos)
-{
+
+
+void newProcessExec(char * trozos[], int ntrozos){
+	int pid;
+	if(trozos[ntrozos-1][0] == '&'){ // Background
+		if ((pid = fork()) == 0){ // Proceso hijo ejecuta programa
+			exec(trozos,ntrozos,false);
+		}else if(pid != -1){ // Proceso padre (si no hay error) añade a lista
+			// Añadir a la lista de procesos
+			printf("Sin implementar\n");
+		}
+	}else{ // Foreground
+		if ((pid = fork()) == 0) exec(trozos,ntrozos,false); // Proceso hijo ejecuta
+		else if (pid != -1) waitpid(pid, NULL, 0); // Proceso padre espera fin de ejecucion
+	}
+}
+
+void priority(char *trozos[], int ntrozos){
 	int pid;
 	if (ntrozos < 3)
 	{
@@ -293,8 +317,7 @@ void showvar(char *trozos[], int ntrozos, char *arg3[])
 	// Ej: Si HOME=/user/sergio está en la 0x0 con getenv sería /user/sergio y estaría en 0x5
 }
 
-void changevar(char *trozos[], int ntrozos, char *arg3[])
-{
+void changevar(char *trozos[], int ntrozos, char *arg3[]){
 	if (ntrozos < 4)
 		return;
 	int aux;
@@ -304,8 +327,6 @@ void changevar(char *trozos[], int ntrozos, char *arg3[])
 		aux = CambiarVariable(trozos[2], trozos[3], environ);
 	if (strcmp(trozos[1], "-p") == 0)
 	{
-		// char a[MAXVAR];
-		//  Añadir check de que se ha podido reservar memoria y liberar memoria
 		char *a;
 		if ((a = (char *)malloc(strlen(trozos[2]) + strlen(trozos[3]) + 2)) == NULL)
 			return;
@@ -323,13 +344,10 @@ void changevar(char *trozos[], int ntrozos, char *arg3[])
 		printf("Imposible cambiar variable %s: %s\n", trozos[2], strerror(errno));
 }
 
-void showenv(char *trozos[], int ntrozos, char *arg3[])
-{
+void showenv(char *trozos[], int ntrozos, char *arg3[]){
 	int i = 0;
-	if (ntrozos == 1)
-	{
-		while (arg3[i] != NULL)
-		{
+	if (ntrozos == 1){
+		while (arg3[i] != NULL){
 			printf("%p->main arg3[%d]=(%p) %s\n", &arg3[i],
 				   i, arg3[i], arg3[i]);
 			i++;
@@ -337,19 +355,16 @@ void showenv(char *trozos[], int ntrozos, char *arg3[])
 		return;
 	}
 
-	if (strcmp(trozos[1], "-environ") == 0)
-	{
-		while (environ[i] != NULL)
-		{
+	if (strcmp(trozos[1], "-environ") == 0){
+		while (environ[i] != NULL){
 			printf("%p->environ[%d]=(%p) %s\n", &environ[i],
-				   i, environ[i], environ[i]);
+			i, environ[i], environ[i]);
 			i++;
 		}
 		return;
 	}
 
-	if (strcmp(trozos[1], "-addr") == 0)
-	{
+	if (strcmp(trozos[1], "-addr") == 0){
 		printf("environ: %p (almacenado en %p)\n", environ, &environ);
 		printf("main arg3: %p (almacenado en %p)\n", arg3, &arg3);
 	}
