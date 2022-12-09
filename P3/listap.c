@@ -118,6 +118,8 @@ void insertProcess(pid_t pid, char* command,tListP list){
     item.pid = pid;
     item.time = time(NULL);
     strncpy(item.command,command,100);
+    item.status = 3;
+    item.signal = 0;
 
     insertItemP(item,list);
     

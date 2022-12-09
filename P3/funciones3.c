@@ -241,7 +241,13 @@ void newProcessExec(char * trozos[], int ntrozos){
 		if ((pid = fork()) == 0){ // Proceso hijo ejecuta programa
 			exec(trozos,ntrozos,false);
 		}else if(pid != -1){ // Proceso padre (si no hay error) añade a lista
-			// Añadir a la lista de procesos
+			char a[100];
+			strcpy(a,trozos[0]);
+			for(int i = 1; i < ntrozos; i++){
+				strcat(a," ");
+				strcat(a,trozos[1]);
+			}
+			insertProcess(pid,)
 			printf("Sin implementar\n");
 		}
 	}else{ // Foreground
