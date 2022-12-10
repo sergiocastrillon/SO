@@ -16,10 +16,10 @@
 #define MAXNAME 400
 
 
-void Cmd_fork();
+void Cmd_fork(tListP listp);
 
 
-void newProcessExec(char * trozos[], int ntrozos);
+void newProcessExec(char * trozos[], int ntrozos,tListP listp);
 void priority(char * trozos[], int ntrozos);
 void showvar(char * trozos[], int ntrozos,char *arg3[]);
 void changevar(char * trozos[], int ntrozos, char *arg3[]);

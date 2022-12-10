@@ -2,13 +2,44 @@
 
 extern char **environ;
 
+
+
+
+
+void printListP(tListP listp){
+	tPosP i = firstP(listp);
+	tItemP item;
+	char time[40];
+	for(tPosP i = firstP(listp); i != NULL; i = nextP(i,listp)){
+		item = getItemP(i,listp);
+		strftime(time, sizeof(time), "%Y/%m/%d  %X", localtime(&item.time));
+		// Señal, si se reconoce la señal se muestra como string, si no como número
+		printf("%d\t sergio p=%d %s %s (%s) %s",item.pid,item.priority,time,item.status)
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //void Cmd_fork(char *tr[])
-void Cmd_fork(){
+void Cmd_fork(tListP listp){
 	pid_t pid;
 
 	if ((pid = fork()) == 0)
 	{
-		/*		VaciarListaProcesos(&LP); Depende de la implementación de cada uno*/
+		cleanListP(listp);
 		printf("ejecutando proceso %d\n", getpid());
 	}
 	else if (pid != -1)
@@ -235,7 +266,7 @@ void exec(char *trozos[], int ntrozos,bool exec){
 
 
 
-void newProcessExec(char * trozos[], int ntrozos){
+void newProcessExec(char * trozos[], int ntrozos,tListP listp){
 	int pid;
 	if(trozos[ntrozos-1][0] == '&'){ // Background
 		if ((pid = fork()) == 0){ // Proceso hijo ejecuta programa
@@ -243,18 +274,20 @@ void newProcessExec(char * trozos[], int ntrozos){
 		}else if(pid != -1){ // Proceso padre (si no hay error) añade a lista
 			char a[100];
 			strcpy(a,trozos[0]);
-			for(int i = 1; i < ntrozos; i++){
+
+			for(int i = 1; i < ntrozos; i++){ // Concatenar para añadir a la lista
+				if(trozos[i][0] == '&') break;
 				strcat(a," ");
-				strcat(a,trozos[1]);
+				strcat(a,trozos[i]);
 			}
-			insertProcess(pid,)
-			printf("Sin implementar\n");
+			insertProcess(pid,a,listp);
 		}
 	}else{ // Foreground
 		if ((pid = fork()) == 0) exec(trozos,ntrozos,false); // Proceso hijo ejecuta
 		else if (pid != -1) waitpid(pid, NULL, 0); // Proceso padre espera fin de ejecucion
 	}
 }
+
 
 void priority(char *trozos[], int ntrozos){
 	int pid;

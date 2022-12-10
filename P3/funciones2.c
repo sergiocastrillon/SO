@@ -31,7 +31,7 @@ void printList(int rev,tListM list){
 
    while(pos != NULL){
 
-      alloc = pos->data;
+      alloc = getItem(pos,list);
       strftime(time, sizeof(time), "%b %d  %H:%M", localtime(&alloc.time));
 
       if(strcmp(alloc.type,"malloc") == 0 && (rev == 0 || rev == 1)){

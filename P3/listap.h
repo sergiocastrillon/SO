@@ -10,10 +10,18 @@
 #ifndef LISTAP_H
 #define LISTAP_H
 
+typedef enum {
+    TERMINADO = 0,
+    SENALADO = 1,
+    PARADO = 2,
+    ACTIVO = 3
+} processStatusT;
+
+
 typedef struct{
     pid_t pid;			//tamaño reservado en memoria
     time_t time;
-    int status; // 0 para terminado, 1 señalado, 2 parado, 3 activo
+    processStatusT status; // 0 para terminado, 1 señalado, 2 parado, 3 activo
     int signal;
     char command[100];
     int priority;
@@ -41,6 +49,8 @@ tPosP firstP(tListP list);
 tPosP lastP(tListP list); 
 tItemP getItemP(tPosP pos,tListP list); 
 void deleteListP(tListP *list);
+void insertProcess(pid_t pid, char* command,tListP list);
+void cleanListP(tListP list);
 
 
 

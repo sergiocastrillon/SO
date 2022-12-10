@@ -118,10 +118,19 @@ void insertProcess(pid_t pid, char* command,tListP list){
     item.pid = pid;
     item.time = time(NULL);
     strncpy(item.command,command,100);
-    item.status = 3;
+    item.status = ACTIVO;
     item.signal = 0;
 
     insertItemP(item,list);
-    
+}
 
+void cleanListP(tListP list){
+    tPosP i = firstP(list);
+    tPosP x;
+    while(i!=NULL){
+        x = i->sig;
+        free(i);
+        i = x;
+    }
+    list->sig = NULL;
 }

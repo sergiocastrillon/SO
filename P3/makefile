@@ -3,7 +3,7 @@ all: clean executable valgrind #execute  # Modificadores para el comando make
 # añadir "execute" para que el programa se ejecute tras compilarlo
 
 executable: p3.o lista.o funciones.o # Crea el ejecutable
-	gcc -Wall -o p3 p3.o lista.o listam.o funciones.o funciones1.o funciones2.c funciones3.c
+	gcc -Wall -o p3 p3.o lista.o listam.o listap.o funciones.o funciones1.o funciones2.c funciones3.c
 
 p0.o: # Solo crea el archivo de salida de p3.c
 	gcc -c p3.c
@@ -12,7 +12,7 @@ funciones.o:
 	 gcc -c funciones.c funciones1.c funciones2.c funciones3.c
 
 lista.o: # """" de lista.c
-	gcc -c lista.c listam.c
+	gcc -c lista.c listam.c listap.c
 
 execute: # Permite correr el ejecutable, solo si antes existe (make executable execute)
 	./p3
