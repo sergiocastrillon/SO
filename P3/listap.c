@@ -55,20 +55,10 @@ bool insertItemP(tItemP item, tListP list){
 
 void removeItemP(tPosP pos, tListP list){ // Recordar que las posiciones pueden variar al borrar
     tPosP temp = list;
-    // Si el elemento a borrar no es el último de la lista
-    if(pos->sig == NULL){
-        while(temp -> sig != pos) temp = temp -> sig;
-        free(pos);
-        pos = NULL;
-        temp -> sig = NULL;
-    }else{
-        temp = pos->sig;
-        pos->data = temp->data; // Sustituimos la información en el nodo que queremos borrar por la del nodo siguiente
-        pos->sig = temp->sig;
-        free(temp); // Borramos el nodo siguiente que contiene la misma información que pos
-        temp = NULL; // El nodo no apunta a nada ahora
-    }
-    
+    while(temp -> sig != pos) temp = temp -> sig;
+    temp -> sig = pos->sig;
+    free(pos);
+    pos = NULL;
 }
 
 

@@ -33,3 +33,4 @@ void changevar(char * trozos[], int ntrozos, char *arg3[]);
 void showenv(char * trozos[], int ntrozos, char *arg3[]);
 void exec(char *trozos[], int ntrozos,bool exec);
 void listjobs(tListP list);
+void deljobs(char * trozos[], int ntrozos,tListP list);

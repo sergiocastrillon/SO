@@ -252,15 +252,16 @@ void exec(char *trozos[], int ntrozos,bool exec){
 		}
 		
 	}
-
+	int err = 0;
 	if (vars)
-		OurExecvpe(trozos[ex], aux2, aux);
+		err = OurExecvpe(trozos[ex], aux2, aux);
 	else
-		OurExecvpe(trozos[ex], aux2, environ);
+		err = OurExecvpe(trozos[ex], aux2, environ);
 
-	// Liberar memoria en caso de ejecucion con fork??
-	for(i = 0; aux[i] != NULL; i++) free(aux[i]);
-	for(i = 0; aux2[i] != NULL; i++) free(aux2[i]);
+	if(err == -1){
+		printf("No ejecutado: %s\n",strerror(errno));
+		if(!exec) exit(0); // si exec false entonces acabamos el proceso creado con fork
+	}
 }
 
 
@@ -439,5 +440,33 @@ void actualizarProcesos(tListP list){
 
 void listjobs(tListP list){
 	actualizarProcesos(list);
+	printListP(list);
+}
+
+void deljobs(char * trozos[], int ntrozos,tListP list){
+	if(ntrozos < 2) listjobs(list);
+	bool term = false;
+	bool sig = false;
+	if(strcmp(trozos[1],"-term")==0) term = true;
+	if(strcmp(trozos[1],"-sig")==0) sig = true;
+
+
+	tPosP i = firstP(list);
+	tPosP x = NULL;
+	tItemP item;
+	while(i!=NULL){
+		item = getItemP(i,list);
+		x = nextP(i,list);
+		
+		if(term && (item.status == TERMINADO)){
+			removeItemP(i,list);
+		} 
+		else if(sig && (item.status == SENALADO)){
+			removeItemP(i,list);
+		} 
+
+		i = x; // Solo si no se borra ningun elemento
+	}
+
 	printListP(list);
 }

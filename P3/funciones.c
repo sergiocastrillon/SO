@@ -55,7 +55,6 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam, char *arg3[],tLis
     // Las opciones conservan el guión (por ejemplo: fecha "-n")
     if(ntrozos!=0){
         if(strcmp(trozos[0],"fin") == 0 || strcmp(trozos[0],"salir") == 0 || strcmp(trozos[0],"bye") == 0) continuar = false;
-        else if(strcmp(trozos[0],"clear")==0) system("clear"); // Limpia la terminal
         else if(strcmp(trozos[0],"autores")==0) autores(trozos,ntrozos);
         else if(strcmp(trozos[0],"pid")==0) pid(trozos,ntrozos);
         else if(strcmp(trozos[0],"carpeta")==0) carpeta(trozos,ntrozos);
@@ -87,6 +86,7 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam, char *arg3[],tLis
         else if(strcmp(trozos[0],"exec")==0) exec(trozos,ntrozos,true);
         else if(strcmp(trozos[0],"fork")==0) Cmd_fork(listp);
         else if(strcmp(trozos[0],"listjobs")==0) listjobs(listp);
+        else if(strcmp(trozos[0],"deljobs")==0) deljobs(trozos,ntrozos,listp);
 
         else newProcessExec(trozos,ntrozos,listp);
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
