@@ -1,5 +1,26 @@
 #include "listap.h"
 
+
+
+
+char * statusToString(int n){
+    switch(n){
+        case 0: 
+            return "TERMINADO";
+        case 1: 
+            return "SENALADO";
+        case 2: 
+            return "PARADO";
+        case 3: 
+            return "ACTIVO";
+        break;
+        default:
+            return "UNKNOWN";
+    }
+}
+
+
+
 bool isEmptyListP(tListP list){
     return list->sig == NULL;
 }
@@ -133,4 +154,8 @@ void cleanListP(tListP list){
         i = x;
     }
     list->sig = NULL;
+}
+
+void updateItem(tItemP item,tPosP pos, tListP list){
+    pos->data = item;
 }

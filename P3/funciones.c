@@ -86,6 +86,7 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam, char *arg3[],tLis
         else if(strcmp(trozos[0],"showenv")==0) showenv(trozos,ntrozos,arg3);
         else if(strcmp(trozos[0],"exec")==0) exec(trozos,ntrozos,true);
         else if(strcmp(trozos[0],"fork")==0) Cmd_fork(listp);
+        else if(strcmp(trozos[0],"listjobs")==0) listjobs(listp);
 
         else newProcessExec(trozos,ntrozos,listp);
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)

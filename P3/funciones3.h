@@ -15,6 +15,13 @@
 #define MAXVAR 1000
 #define MAXNAME 400
 
+struct SEN{
+	char *nombre;
+	int senal;
+};
+
+
+
 
 void Cmd_fork(tListP listp);
 
@@ -25,3 +32,4 @@ void showvar(char * trozos[], int ntrozos,char *arg3[]);
 void changevar(char * trozos[], int ntrozos, char *arg3[]);
 void showenv(char * trozos[], int ntrozos, char *arg3[]);
 void exec(char *trozos[], int ntrozos,bool exec);
+void listjobs(tListP list);

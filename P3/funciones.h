@@ -10,7 +10,6 @@
 
 
 
-
 int TrocearCadena(char * cadena, char * trozos[]);
 void imprimirPrompt();
 void leerEntrada(char entrada[],tList lista);

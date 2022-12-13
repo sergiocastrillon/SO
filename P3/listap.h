@@ -38,6 +38,8 @@ struct tNodeP{
 typedef tPosP tListP;
 
 
+char * statusToString(int n);
+
 bool isEmptyListP(tListP list); 
 
 void createListP(tListP* list); 
@@ -52,7 +54,7 @@ void deleteListP(tListP *list);
 void insertProcess(pid_t pid, char* command,tListP list);
 void cleanListP(tListP list);
 
-
+void updateItem(tItemP item,tPosP pos, tListP list);
 
 
 #endif
