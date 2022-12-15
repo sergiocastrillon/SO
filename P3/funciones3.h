@@ -1,3 +1,6 @@
+// Sergio Castrillón | s.castrillon
+// Mario Freire | mario.freire
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

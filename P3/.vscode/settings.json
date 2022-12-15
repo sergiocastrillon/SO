@@ -3,6 +3,8 @@
         "string.h": "c",
         "stdlib.h": "c",
         "resource.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "ctype.h": "c",
+        "stdio.h": "c"
     }
 }

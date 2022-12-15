@@ -1,3 +1,6 @@
+// Sergio Castrillón | s.castrillon
+// Mario Freire | mario.freire
+
 #include "funciones2.h"
 
 

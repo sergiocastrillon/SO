@@ -1,3 +1,6 @@
+// Sergio Castrillón | s.castrillon
+// Mario Freire | mario.freire
+
 #include "funciones.h"
 
 // TrocearCadena
@@ -337,8 +340,20 @@ void ayuda(char* trozos[], int ntrozos){
         "\t-blocks: Muestra los bloques de memoria asignados\n\t-funcs: Muestra las direcciones de memoria de las funciones\n\t-vars: Muestra las direcciones de las variables\n"
         "\t-all: Muestra todo lo anterior\n\t-pmap: ejecuta el comando pmap o similar sobre el proceso de la shell\n");
         else if(strcmp(trozos[1],"recursiva")==0) printf("recursiva [-n]:\tLlama n veces a la función recursiva\n");
+        else if(strcmp(trozos[1],"priority")==0) printf("priority [pid] [valor]:\tMuestra o cambia la prioridad del proceso pid a valor\n");
+        else if(strcmp(trozos[1],"showvar")==0) printf("showvar var:\tMuestra el valor y las direcciones de la variable de entorno var\n");
+        else if(strcmp(trozos[1],"changevar")==0) printf("changevar [-a|-e|-p] var valor:\tCambia el valor de una variable de entorno\n\t-a: accede por el tercer arg de main\n\t"
+        "-e: accede mediante environ\n\t-p: accede mediante putenv\n");
+        else if(strcmp(trozos[1],"showenv")==0) printf("showenv [-environ|-addr]:\tMuestra el entorno del proceso\n\t-environ: accede usando environ (en lugar del tercer arg de main)"
+        "\n\t-addr: muestra el valor y donde se almacenan environ y el 3er arg main\n");
+        else if(strcmp(trozos[1],"fork")==0) printf("fork:\tEl shell hace fork y queda en espera a que su hijo termine\n");
+        else if(strcmp(trozos[1],"execute")==0) printf("execute VAR1 VAR2 ..prog args....[@pri]:\tEjecuta, sin crear proceso,prog con argumentos\n"
+        "\ten un entorno que contiene solo las variables VAR1, VAR2...\n");
+        else if(strcmp(trozos[1],"listjobs")==0) printf("listjobs:\tLista los procesos en segundo plano\n");
+        else if(strcmp(trozos[1],"deljobs")==0) printf("deljobs [-term][-sig]:\tElimina los procesos de la lista procesos en sp\n\t-term: los terminados\n\t-sig: los terminados por senal\n");
+        else if(strcmp(trozos[1],"job")==0) printf("job [-fg] pid:\tMuestra informacion del proceso pid\n\t-fg: lo pasa a primer plano\n");
         else printf("ayuda: %s no encontrado\n",trozos[1]);
-    }
+    }	
 }
 
 // *********
