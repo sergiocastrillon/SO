@@ -83,10 +83,11 @@ bool procesarEntrada(char entrada[],tList lista,tListM listam, char *arg3[],tLis
         else if(strcmp(trozos[0],"showvar")==0) showvar(trozos,ntrozos,arg3);
         else if(strcmp(trozos[0],"changevar")==0) changevar(trozos,ntrozos,arg3);
         else if(strcmp(trozos[0],"showenv")==0) showenv(trozos,ntrozos,arg3);
-        else if(strcmp(trozos[0],"exec")==0) exec(trozos,ntrozos,true);
+        else if(strcmp(trozos[0],"execute")==0) execute(trozos,ntrozos,true);
         else if(strcmp(trozos[0],"fork")==0) Cmd_fork(listp);
         else if(strcmp(trozos[0],"listjobs")==0) listjobs(listp);
         else if(strcmp(trozos[0],"deljobs")==0) deljobs(trozos,ntrozos,listp);
+        else if(strcmp(trozos[0],"job")==0) job(trozos,ntrozos,listp);
 
         else newProcessExec(trozos,ntrozos,listp);
         // solo usar esta sección para llamar a una función o para usar una sola intrucción (posible para el fin??)
@@ -293,7 +294,8 @@ void infosis(){
 
 void ayuda(char* trozos[], int ntrozos){
     if (ntrozos == 1) printf( "autores pid carpeta fecha hist comando infosis ayuda fin salir bye"
-    "create stat list delete deltree\n");
+    "create stat list delete deltree allocate deallocate memfill memdump memoria recursiva priority"
+    "showvar changevar showenv fork execute listjobs deljobs job\n");
     else{
         if(strcmp(trozos[1],"fin") == 0 || strcmp(trozos[1],"salir") == 0 || strcmp(trozos[1],"bye") == 0)
         printf("%s:\tfinaliza el shell.\n",trozos[1]);

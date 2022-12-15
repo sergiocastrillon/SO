@@ -2,6 +2,7 @@
     "files.associations": {
         "string.h": "c",
         "stdlib.h": "c",
-        "resource.h": "c"
+        "resource.h": "c",
+        "unistd.h": "c"
     }
 }

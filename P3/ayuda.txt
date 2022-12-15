@@ -1,2 +1,0 @@
-https://stackoverflow.com/questions/10321435/is-char-envp-as-a-third-argument-to-main-portable
-https://jameshfisher.com/2017/02/02/how-do-i-access-environment-variables-in-c/

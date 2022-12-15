@@ -55,6 +55,7 @@ void insertProcess(pid_t pid, char* command,tListP list);
 void cleanListP(tListP list);
 
 void updateItem(tItemP item,tPosP pos, tListP list);
+tPosP findPid(int pid, tListP list);
 
 
 #endif

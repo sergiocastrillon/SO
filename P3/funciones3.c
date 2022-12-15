@@ -77,14 +77,6 @@ static struct SEN sigstrnum[200]={
 	};    //fin array sigstrnum
 
 
-int ValorSenal(char * sen)  /*devuelve el numero de senial a partir del nombre */
-{
-  int i;
-  for (i=0; sigstrnum[i].nombre!=NULL; i++)
-	if (!strcmp(sen, sigstrnum[i].nombre))
-		return sigstrnum[i].senal;
-  return -1;
-}
 
 
 char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal */
@@ -96,13 +88,10 @@ char *NombreSenal(int sen)  /*devuelve el nombre senal a partir de la senal */
  return ("SIGUNKNOWN");
 }
 
-
-void printListP(tListP listp){
-	tItemP item;
+// Imprime la información de un tItemP
+void printItem(tItemP item){
 	char time[40];
-	for(tPosP i = firstP(listp); i != NULL; i = nextP(i,listp)){
-		item = getItemP(i,listp);
-		strftime(time, sizeof(time), "%Y/%m/%d  %X", localtime(&item.time));
+	strftime(time, sizeof(time), "%Y/%m/%d  %X", localtime(&item.time));
 		// Señal, si se reconoce la señal se muestra como string, si no como número
 		char* a; 
 		a = NombreSenal(item.signal);
@@ -114,6 +103,15 @@ void printListP(tListP listp){
 			printf("%d\t p=%d %s %s (%s) %s\n",item.pid,item.priority,time,
 			statusToString(item.status),a,item.command);
 		}
+}
+
+
+// Imprime la lista de procesos
+void printListP(tListP listp){
+	tItemP item;
+	for(tPosP i = firstP(listp); i != NULL; i = nextP(i,listp)){
+		item = getItemP(i,listp);
+		printItem(item);
 	}
 }
 
@@ -200,7 +198,7 @@ int OurExecvpe(char *file, char *argv[MAXVAR], char *envp[MAXVAR])
 
 
 
-void exec(char *trozos[], int ntrozos,bool exec){
+void execute(char *trozos[], int ntrozos,bool exec){
 	int i, ex,z;
 	int a;
 	bool vars = true;
@@ -223,12 +221,13 @@ void exec(char *trozos[], int ntrozos,bool exec){
 	}
 	aux[z] = NULL;
 
-	if (i == ex) vars = false; // entonces pasamos environ
+	// Si no encontramos ninguna variable entonces pasamos todo el entorno
+	if (i == ex) vars = false;
 
-	ex = i;
+	ex = i; // guardamos la posicion donde se encuentra ejecutable
 
 	z = 0;
-	while (i < ntrozos){ // Buscamos argumentos opcionales (executable siempre se copia)
+	while (i < ntrozos){ // Buscamos argumentos opcionales (ejecutable siempre se copia)
 		if (trozos[i][0] == '@' || trozos[i][0] == '&') break;
 		aux2[z] = strndup(trozos[i], MAXVAR);
 		i++;
@@ -236,6 +235,7 @@ void exec(char *trozos[], int ntrozos,bool exec){
 	}
 	aux2[z] = NULL;
 
+	// Buscamos si nos han pasado la prioridad
 	if(i < ntrozos && trozos[i][0] == '@'){
 		int x = 1;
 		char a[4];
@@ -245,9 +245,9 @@ void exec(char *trozos[], int ntrozos,bool exec){
 		}
 		
 		int pri = atoi(a);
-		printf("%d",pri);
 		if (setpriority(PRIO_PROCESS, getpid(), pri) == -1){
-			printf("Error al intentar ejecutar con prioridad %d\n: %s\n",pri, strerror(errno));
+			printf("Error al intentar ejecutar con prioridad %d: %s\n",pri, strerror(errno));
+			if(!exec) exit(0); // Si se creo el proceso con fork entonces acaba
 			return;
 		}
 		
@@ -270,8 +270,12 @@ void newProcessExec(char * trozos[], int ntrozos,tListP listp){
 	int pid;
 	if(trozos[ntrozos-1][0] == '&'){ // Background
 		if ((pid = fork()) == 0){ // Proceso hijo ejecuta programa
-			exec(trozos,ntrozos,false);
+			execute(trozos,ntrozos,false);
 		}else if(pid != -1){ // Proceso padre (si no hay error) añade a lista
+			// Espera un poco por el hijo por si devuelve un error y lo tiene que mostrar
+			sleep(1); 
+
+
 			char a[100];
 			strcpy(a,trozos[0]);
 
@@ -283,7 +287,7 @@ void newProcessExec(char * trozos[], int ntrozos,tListP listp){
 			insertProcess(pid,a,listp);
 		}
 	}else{ // Foreground
-		if ((pid = fork()) == 0) exec(trozos,ntrozos,false); // Proceso hijo ejecuta
+		if ((pid = fork()) == 0) execute(trozos,ntrozos,false); // Proceso hijo ejecuta
 		else if (pid != -1) waitpid(pid, NULL, 0); // Proceso padre espera fin de ejecucion
 	}
 }
@@ -291,13 +295,10 @@ void newProcessExec(char * trozos[], int ntrozos,tListP listp){
 
 void priority(char *trozos[], int ntrozos){
 	int pid;
-	if (ntrozos < 3)
-	{
-		if (ntrozos == 1)
-			pid = getpid();
+	if (ntrozos < 3){
+		if (ntrozos == 1) pid = getpid();
 
-		if (ntrozos == 2)
-			pid = atoi(trozos[1]);
+		if (ntrozos == 2) pid = atoi(trozos[1]);
 
 		errno = -1;
 		int prio = getpriority(PRIO_PROCESS, pid);
@@ -316,29 +317,28 @@ void priority(char *trozos[], int ntrozos){
 	int prio = atoi(trozos[2]);
 	if (setpriority(PRIO_PROCESS, pid, prio) != -1)
 		printf("La prioridad del proceso %d"
-			   " fue cambiada a %d\n",
-			   pid, prio);
+		" fue cambiada a %d\n",pid, prio);
 	else
 		printf("Error al intentar cambiar la prioridad del proceso %d: %s\n", pid, strerror(errno));
 }
 
-void showvar(char *trozos[], int ntrozos, char *arg3[])
-{
-	if (ntrozos < 2)
-		return;
+void showvar(char *trozos[], int ntrozos, char *arg3[]){
+	if (ntrozos < 2) return;
+	
 	int a;
 	// BuscarVariable hace un set de errno si no se encuentra la variable
+
 	// Arg3
 	if ((a = BuscarVariable(trozos[1], arg3)) != -1)
 		printf("Con arg3 main %s(%p) @%p\n", arg3[a],
-			   arg3[a], &arg3[a]);
+		arg3[a], &arg3[a]);
 	else
 		printf("Error buscando la variable %s: %s\n", trozos[1], strerror(errno));
 
 	// environ
 	if ((a = BuscarVariable(trozos[1], environ)) != -1)
 		printf("  Con environ %s(%p) @%p\n", environ[a],
-			   environ[a], &environ[a]);
+		environ[a], &environ[a]);
 	else
 		printf("Error buscando la variable %s: %s\n", trozos[1], strerror(errno));
 
@@ -360,15 +360,16 @@ void changevar(char *trozos[], int ntrozos, char *arg3[]){
 	if (ntrozos < 4)
 		return;
 	int aux;
-	if (strcmp(trozos[1], "-a") == 0)
+
+	if (strcmp(trozos[1], "-a") == 0) // arg3
 		aux = CambiarVariable(trozos[2], trozos[3], arg3);
-	if (strcmp(trozos[1], "-e") == 0)
+	if (strcmp(trozos[1], "-e") == 0) // enviro
 		aux = CambiarVariable(trozos[2], trozos[3], environ);
-	if (strcmp(trozos[1], "-p") == 0)
-	{
+	if (strcmp(trozos[1], "-p") == 0){ //putenv
 		char *a;
 		if ((a = (char *)malloc(strlen(trozos[2]) + strlen(trozos[3]) + 2)) == NULL)
 			return;
+
 		strcpy(a, trozos[2]);
 		strcat(a, "=");
 		strcat(a, trozos[3]);
@@ -383,12 +384,13 @@ void changevar(char *trozos[], int ntrozos, char *arg3[]){
 		printf("Imposible cambiar variable %s: %s\n", trozos[2], strerror(errno));
 }
 
+// Mostrar todas las variables de entorno
 void showenv(char *trozos[], int ntrozos, char *arg3[]){
 	int i = 0;
 	if (ntrozos == 1){
 		while (arg3[i] != NULL){
 			printf("%p->main arg3[%d]=(%p) %s\n", &arg3[i],
-				   i, arg3[i], arg3[i]);
+			i, arg3[i], arg3[i]);
 			i++;
 		}
 		return;
@@ -409,40 +411,48 @@ void showenv(char *trozos[], int ntrozos, char *arg3[]){
 	}
 }
 
+
+tItemP actualizarProceso(tItemP p, int est){
+	if(WIFEXITED(est)){
+		p.status = TERMINADO;
+		p.signal = WEXITSTATUS(est);
+	}else if(WIFSIGNALED(est)){
+		p.status = SENALADO;
+		p.signal = WTERMSIG(est);
+	}else if(WIFSTOPPED(est)){
+		p.status = PARADO;
+		p.signal = WSTOPSIG(est);
+	}else if(WIFCONTINUED(est)){
+		p.status = ACTIVO;
+		p.signal = 0;
+	}
+
+	return p;
+}
+// Actualiza la lista de procesos en busca de cambios de estado (o de prioridad)
 void actualizarProcesos(tListP list){
 	for(tPosP i = firstP(list); i != NULL; i = nextP(i,list)){
-		tItemP p = i->data;
+		tItemP p = getItemP(i,list);
 
 		p.priority = getpriority(PRIO_PROCESS, p.pid);
-
 		int est;
 
-		if(waitpid(p.pid,&est,WNOHANG|WUNTRACED|WCONTINUED)==p.pid){
-			if(WIFEXITED(est)){
-				p.status = TERMINADO;
-				p.signal = WEXITSTATUS(est);
-			}else if(WIFSIGNALED(est)){
-				p.status = SENALADO;
-				p.signal = WTERMSIG(est);
-			}else if(WIFSTOPPED(est)){
-				p.status = PARADO;
-				p.signal = WSTOPSIG(est);
-			}else if(WIFCONTINUED(est)){
-				p.status = ACTIVO;
-				p.signal = 0;
-			}
-		}
-
 		
+
+		if(waitpid(p.pid,&est,WNOHANG|WUNTRACED|WCONTINUED)==p.pid){
+			p = actualizarProceso(p,est);
+		}
 		updateItem(p,i,list);
 	}
 }
 
+// Muestra la lista de procesos
 void listjobs(tListP list){
 	actualizarProcesos(list);
 	printListP(list);
 }
 
+// Borra, según el argumento pasado, procesos de la lista
 void deljobs(char * trozos[], int ntrozos,tListP list){
 	if(ntrozos < 2) listjobs(list);
 	bool term = false;
@@ -467,6 +477,40 @@ void deljobs(char * trozos[], int ntrozos,tListP list){
 
 		i = x; // Solo si no se borra ningun elemento
 	}
-
 	printListP(list);
+}
+
+
+void job(char * trozos[], int ntrozos,tListP list){
+	if(ntrozos < 2) return;
+
+	actualizarProcesos(list);
+	if(ntrozos < 3){
+		int pid = atoi(trozos[1]);
+		printf("ok");
+		tPosP p = findPid(pid,list);
+		if(p == NULL) return;
+		tItemP i = getItemP(p,list);
+		printItem(i);
+
+	}else if(strcmp(trozos[1],"-fg")==0){
+
+		int pid = atoi(trozos[2]);
+		tPosP p = findPid(pid,list);
+
+		if(p == NULL) return;
+		tItemP i = getItemP(p,list);
+
+		if(i.status == TERMINADO){
+			printf("El proceso %d ya esta terminado\n",pid);
+			return;
+		} 
+		int est;
+		removeItemP(p,list);
+
+		waitpid(pid, &est, 0);
+		i = actualizarProceso(i,est);
+		if(i.status == TERMINADO) printf("Proceso %d terminado normalmente. Valor devuelto %d\n",pid,i.signal);
+		if(i.status == SENALADO) printf("Proceso %d terminado por señal %s\n",pid,NombreSenal(i.signal));
+	}
 }

@@ -31,6 +31,7 @@ void priority(char * trozos[], int ntrozos);
 void showvar(char * trozos[], int ntrozos,char *arg3[]);
 void changevar(char * trozos[], int ntrozos, char *arg3[]);
 void showenv(char * trozos[], int ntrozos, char *arg3[]);
-void exec(char *trozos[], int ntrozos,bool exec);
+void execute(char *trozos[], int ntrozos,bool exec);
 void listjobs(tListP list);
 void deljobs(char * trozos[], int ntrozos,tListP list);
+void job(char * trozos[], int ntrozos,tListP list);

@@ -149,3 +149,12 @@ void cleanListP(tListP list){
 void updateItem(tItemP item,tPosP pos, tListP list){
     pos->data = item;
 }
+
+tPosP findPid(int pid, tListP list){
+    tPosP pos = firstP(list);
+    while(pos != NULL){
+        if(pid == pos->data.pid) break;
+        pos = nextP(pos,list);
+    }
+    return pos;
+}
